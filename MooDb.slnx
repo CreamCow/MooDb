@@ -1,0 +1,9 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/MooDb/MooDb.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/MooDb.Tests.Integration/MooDb.Tests.Integration.csproj" Id="72ee0fa7-ab2d-4a52-b575-e0707fe91e26" />
+    <Project Path="tests/MooDb.Tests.Unit/MooDb.Tests.Unit.csproj" Id="801151bb-01e0-40d4-bc8e-c528d75607ff" />
+  </Folder>
+</Solution>
