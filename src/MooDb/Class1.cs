@@ -2,6 +2,6 @@
 {
     public class Class1
     {
-        // Test comment
+        // Test comment. Testing git check in
     }
 }
