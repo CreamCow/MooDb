@@ -1,7 +1,8 @@
-﻿using System.Data;
-using Microsoft.Data.SqlClient;
+﻿using Microsoft.Data.SqlClient;
 using MooDb.Configuration;
 using MooDb.Execution;
+using MooDb.Mapping;
+using System.Data;
 
 
 namespace MooDb.Core
@@ -11,6 +12,7 @@ namespace MooDb.Core
         private readonly MooCommandExecutor _executor;
         private readonly string? _connectionString;
         private readonly SqlConnection? _connection;
+        private readonly MooMapper _mapper;
 
         public MooDb(string connectionString, MooDbOptions? options = null)
         {
@@ -19,6 +21,7 @@ namespace MooDb.Core
 
             var opts = options ?? new MooDbOptions();
             _executor = new MooCommandExecutor(opts.CommandTimeoutSeconds);
+            _mapper = new MooMapper(opts.StrictAutoMapping);
         }
 
         public MooDb(SqlConnection connection, MooDbOptions? options = null)
@@ -28,6 +31,7 @@ namespace MooDb.Core
 
             var opts = options ?? new MooDbOptions();
             _executor = new MooCommandExecutor(opts.CommandTimeoutSeconds);
+            _mapper = new MooMapper(opts.StrictAutoMapping);
         }
 
         public Task<int> ExecuteAsync(
@@ -72,6 +76,61 @@ namespace MooDb.Core
                         return default;
 
                     return (T)Convert.ChangeType(result, typeof(T));
+                },
+                cancellationToken);
+        }
+
+        public Task<List<T>> ListAsync<T>(
+            string procedure,
+            IReadOnlyList<SqlParameter>? parameters = null,
+            int? commandTimeoutSeconds = null,
+            CancellationToken cancellationToken = default)
+        {
+            var context = CreateExecutionContext();
+
+            return _executor.ExecuteAsync(
+                context,
+                procedure,
+                CommandType.StoredProcedure,
+                parameters,
+                commandTimeoutSeconds,
+                async cmd =>
+                {
+                    await using var reader = await cmd.ExecuteReaderAsync(cancellationToken);
+                    return await _mapper.MapListAsync<T>(reader, cancellationToken);
+                },
+                cancellationToken);
+        }
+
+
+        public Task<T?> SingleAsync<T>(
+            string procedure,
+            IReadOnlyList<SqlParameter>? parameters = null,
+            int? commandTimeoutSeconds = null,
+            CancellationToken cancellationToken = default)
+        {
+            var context = CreateExecutionContext();
+
+            return _executor.ExecuteAsync(
+                context,
+                procedure,
+                CommandType.StoredProcedure,
+                parameters,
+                commandTimeoutSeconds,
+                async cmd =>
+                {
+                    await using var reader = await cmd.ExecuteReaderAsync(cancellationToken);
+
+                    var results = await _mapper.MapListAsync<T>(reader, cancellationToken);
+
+                    if (results.Count == 0)
+                        return default;
+
+                    if (results.Count > 1)
+                        throw new InvalidOperationException(
+                            $"Expected at most one row but received {results.Count}.");
+
+                    return results[0];
                 },
                 cancellationToken);
         }
