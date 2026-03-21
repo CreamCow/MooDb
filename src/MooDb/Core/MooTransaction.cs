@@ -1,62 +1,89 @@
-﻿using Microsoft.Data.SqlClient;
-using MooDb.Core;
+﻿using System.Data;
+using Microsoft.Data.SqlClient;
 using MooDb.Execution;
 using MooDb.Mapping;
-using System.Data;
+using MooDb.Sql;
 
-namespace MooDb.Sql;
+namespace MooDb.Core;
 
-public sealed class MooSql
+/// <summary>
+/// Represents an active database transaction for executing multiple operations as a single unit of work.
+/// </summary>
+/// <remarks>
+/// <para>
+/// A <see cref="MooTransaction"/> provides the same core API surface as <see cref="MooDb"/>,
+/// but all commands execute on the same connection and within the same SQL Server transaction.
+/// </para>
+/// <para>
+/// Use <see cref="MooDb.BeginTransactionAsync(CancellationToken)"/> to create an instance.
+/// </para>
+/// <para>
+/// Changes are committed only when <see cref="CommitAsync(CancellationToken)"/> is called.
+/// If the transaction is disposed without being committed, it is rolled back.
+/// </para>
+/// <para>
+/// For SQL text execution, use the <see cref="Sql"/> property.
+/// </para>
+/// </remarks>
+public sealed class MooTransaction : IAsyncDisposable
 {
     // Fields
     private readonly MooCommandExecutor _executor;
     private readonly MooMapper _mapper;
-    private readonly Func<MooExecutionContext> _contextFactory;
+    private readonly SqlConnection _connection;
+    private readonly SqlTransaction _transaction;
+    private readonly bool _ownsConnection;
+    private bool _committed;
+    private bool _disposed;
+
 
     // Constructors
-    internal MooSql(
+    internal MooTransaction(
         MooCommandExecutor executor,
         MooMapper mapper,
-        Func<MooExecutionContext> contextFactory)
+        SqlConnection connection,
+        SqlTransaction transaction,
+        bool ownsConnection)
     {
-        _executor = executor;
-        _mapper = mapper;
-        _contextFactory = contextFactory;
+        _executor = executor ?? throw new ArgumentNullException(nameof(executor));
+        _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
+        _connection = connection ?? throw new ArgumentNullException(nameof(connection));
+        _transaction = transaction ?? throw new ArgumentNullException(nameof(transaction));
+        _ownsConnection = ownsConnection;
+
+        Sql = new MooSql(_executor, _mapper, CreateExecutionContext);
     }
 
 
     // Public API
+    /// <summary>
+    /// Provides access to SQL text execution within the current transaction.
+    /// </summary>
+    public MooSql Sql { get; }
 
     /// <summary>
-    /// Executes a SQL text command that does not return result sets.
+    /// Executes a stored procedure that does not return result sets within the current transaction.
     /// </summary>
     /// <remarks>
     /// <para>
-    /// This method executes the provided SQL text directly against the database.
-    /// </para>
-    /// <para>
-    /// It is intended for commands such as inserts, updates, and deletes.
+    /// This method is intended for commands such as inserts, updates, and deletes.
     /// </para>
     /// <para>
     /// The return value represents the number of rows affected, as reported by SQL Server.
     /// </para>
-    /// <para>
-    /// MooDb is designed for stored procedure usage. This method provides a SQL text
-    /// alternative where needed.
-    /// </para>
     /// </remarks>
     public Task<int> ExecuteAsync(
-        string sql,
+        string procedure,
         IReadOnlyList<SqlParameter>? parameters = null,
         int? commandTimeoutSeconds = null,
         CancellationToken cancellationToken = default)
     {
-        var context = _contextFactory();
+        var context = CreateExecutionContext();
 
         return _executor.ExecuteAsync(
             context,
-            sql,
-            CommandType.Text,
+            procedure,
+            CommandType.StoredProcedure,
             parameters,
             commandTimeoutSeconds,
             cmd => cmd.ExecuteNonQueryAsync(cancellationToken),
@@ -64,12 +91,9 @@ public sealed class MooSql
     }
 
     /// <summary>
-    /// Executes a SQL text query and returns a single scalar value.
+    /// Executes a stored procedure and returns a single scalar value within the current transaction.
     /// </summary>
     /// <remarks>
-    /// <para>
-    /// This method executes the provided SQL text directly against the database.
-    /// </para>
     /// <para>
     /// If the result is <c>null</c> or <see cref="DBNull"/>, <c>null</c> is returned.
     /// </para>
@@ -79,23 +103,19 @@ public sealed class MooSql
     /// <para>
     /// This method is not affected by strict auto-mapping settings.
     /// </para>
-    /// <para>
-    /// MooDb is designed for stored procedure usage. This method provides a SQL text
-    /// alternative where needed.
-    /// </para>
     /// </remarks>
     public Task<T?> ScalarAsync<T>(
-        string sql,
+        string procedure,
         IReadOnlyList<SqlParameter>? parameters = null,
         int? commandTimeoutSeconds = null,
         CancellationToken cancellationToken = default)
     {
-        var context = _contextFactory();
+        var context = CreateExecutionContext();
 
         return _executor.ExecuteAsync(
             context,
-            sql,
-            CommandType.Text,
+            procedure,
+            CommandType.StoredProcedure,
             parameters,
             commandTimeoutSeconds,
             async cmd =>
@@ -111,12 +131,9 @@ public sealed class MooSql
     }
 
     /// <summary>
-    /// Executes a SQL text query and returns a single result mapped to <typeparamref name="T"/>.
+    /// Executes a stored procedure and returns a single result mapped to <typeparamref name="T"/> within the current transaction.
     /// </summary>
     /// <remarks>
-    /// <para>
-    /// This method executes the provided SQL text directly against the database.
-    /// </para>
     /// <para>
     /// Returns <c>null</c> if no rows are returned.
     /// </para>
@@ -129,23 +146,19 @@ public sealed class MooSql
     /// <para>
     /// Mapping rules are the same as <see cref="ListAsync{T}"/>.
     /// </para>
-    /// <para>
-    /// MooDb is designed for stored procedure usage. This method provides a SQL text
-    /// alternative where needed.
-    /// </para>
     /// </remarks>
     public Task<T?> SingleAsync<T>(
-        string sql,
+        string procedure,
         IReadOnlyList<SqlParameter>? parameters = null,
         int? commandTimeoutSeconds = null,
         CancellationToken cancellationToken = default)
     {
-        var context = _contextFactory();
+        var context = CreateExecutionContext();
 
         return _executor.ExecuteAsync(
             context,
-            sql,
-            CommandType.Text,
+            procedure,
+            CommandType.StoredProcedure,
             parameters,
             commandTimeoutSeconds,
             async cmd =>
@@ -167,12 +180,9 @@ public sealed class MooSql
     }
 
     /// <summary>
-    /// Executes a SQL text query and maps the result set to a list of <typeparamref name="T"/>.
+    /// Executes a stored procedure and maps the result set to a list of <typeparamref name="T"/> within the current transaction.
     /// </summary>
     /// <remarks>
-    /// <para>
-    /// This method executes the provided SQL text directly against the database.
-    /// </para>
     /// <para>
     /// Auto-mapping supports both:
     /// - classes with public settable properties
@@ -186,23 +196,19 @@ public sealed class MooSql
     /// If strict auto-mapping is enabled, an exception is thrown when the result set
     /// does not match the target type.
     /// </para>
-    /// <para>
-    /// MooDb is designed for stored procedure usage. This method provides a SQL text
-    /// alternative where needed.
-    /// </para>
     /// </remarks>
     public Task<List<T>> ListAsync<T>(
-        string sql,
+        string procedure,
         IReadOnlyList<SqlParameter>? parameters = null,
         int? commandTimeoutSeconds = null,
         CancellationToken cancellationToken = default)
     {
-        var context = _contextFactory();
+        var context = CreateExecutionContext();
 
         return _executor.ExecuteAsync(
             context,
-            sql,
-            CommandType.Text,
+            procedure,
+            CommandType.StoredProcedure,
             parameters,
             commandTimeoutSeconds,
             async cmd =>
@@ -214,11 +220,11 @@ public sealed class MooSql
     }
 
     /// <summary>
-    /// Executes a SQL text query and returns multiple result sets.
+    /// Executes a stored procedure within the current transaction and returns multiple result sets.
     /// </summary>
     /// <remarks>
     /// <para>
-    /// Executes the provided SQL text directly against the database and returns a <see cref="MooResults"/>
+    /// Executes the stored procedure within the current transaction and returns a <see cref="MooResults"/>
     /// instance for sequentially reading result sets.
     /// </para>
     /// <para>
@@ -231,23 +237,19 @@ public sealed class MooSql
     /// The underlying data reader is owned by <see cref="MooResults"/> and is disposed
     /// when the results are disposed.
     /// </para>
-    /// <para>
-    /// MooDb is designed for stored procedure usage. This method provides a SQL text
-    /// alternative where needed.
-    /// </para>
     /// </remarks>
     public Task<MooResults> QueryMultipleAsync(
-        string sql,
+        string procedure,
         IReadOnlyList<SqlParameter>? parameters = null,
         int? commandTimeoutSeconds = null,
         CancellationToken cancellationToken = default)
     {
-        var context = _contextFactory();
+        var context = CreateExecutionContext();
 
         return _executor.ExecuteAsync(
             context,
-            sql,
-            CommandType.Text,
+            procedure,
+            CommandType.StoredProcedure,
             parameters,
             commandTimeoutSeconds,
             async cmd =>
@@ -256,5 +258,74 @@ public sealed class MooSql
                 return new MooResults(reader, _mapper);
             },
             cancellationToken);
+    }
+
+    /// <summary>
+    /// Commits the current transaction.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Once committed, the transaction cannot be used again.
+    /// </para>
+    /// <para>
+    /// If a transaction is disposed without being committed, MooDb rolls it back.
+    /// </para>
+    /// </remarks>
+    public async Task CommitAsync(CancellationToken cancellationToken = default)
+    {
+        ThrowIfDisposed();
+
+        await _transaction.CommitAsync(cancellationToken);
+        _committed = true;
+    }
+
+    /// <summary>
+    /// Asynchronously disposes the transaction.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// If the transaction has not been committed, MooDb attempts to roll it back before disposing resources.
+    /// </para>
+    /// <para>
+    /// The underlying connection is always disposed when the transaction is disposed.
+    /// </para>
+    /// </remarks>
+    public async ValueTask DisposeAsync()
+    {
+        if (_disposed)
+            return;
+
+        try
+        {
+            if (!_committed)
+            {
+                await _transaction.RollbackAsync();
+            }
+        }
+        finally
+        {
+            await _transaction.DisposeAsync();
+
+            if (_ownsConnection)
+            {
+                await _connection.DisposeAsync();
+            }
+
+            _disposed = true;
+        }
+    }
+
+
+    // Internal helpers
+
+
+    // Private helpers
+    private MooExecutionContext CreateExecutionContext()
+        => new(_connection, _transaction, ownsConnection: false);
+
+    private void ThrowIfDisposed()
+    {
+        if (_disposed)
+            throw new ObjectDisposedException(nameof(MooTransaction));
     }
 }

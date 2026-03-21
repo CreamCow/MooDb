@@ -1,17 +1,42 @@
-﻿using Microsoft.Data.SqlClient;
-using System.Data;
+﻿using System.Data;
+using Microsoft.Data.SqlClient;
 
 namespace MooDb.Execution;
 
+/// <summary>
+/// Executes SQL Server commands for MooDb.
+/// </summary>
+/// <remarks>
+/// <para>
+/// Centralises command execution, connection opening, command creation, parameter cloning,
+/// timeout resolution, and output parameter propagation.
+/// </para>
+/// <para>
+/// This type is internal to MooDb and is shared by the stored procedure, SQL text,
+/// and transaction execution surfaces.
+/// </para>
+/// </remarks>
 internal sealed class MooCommandExecutor
 {
+    // Fields
     private readonly int _defaultCommandTimeoutSeconds;
 
+
+    // Constructors
     public MooCommandExecutor(int defaultCommandTimeoutSeconds)
     {
+        if (defaultCommandTimeoutSeconds < 0)
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(defaultCommandTimeoutSeconds),
+                "Command timeout must be zero or greater.");
+        }
+
         _defaultCommandTimeoutSeconds = defaultCommandTimeoutSeconds;
     }
 
+
+    // Public API
     public async Task<TResult> ExecuteAsync<TResult>(
         MooExecutionContext context,
         string commandText,
@@ -21,7 +46,12 @@ internal sealed class MooCommandExecutor
         Func<SqlCommand, Task<TResult>> execute,
         CancellationToken cancellationToken)
     {
+        ArgumentNullException.ThrowIfNull(context);
+        ArgumentException.ThrowIfNullOrWhiteSpace(commandText);
+        ArgumentNullException.ThrowIfNull(execute);
+
         var connection = context.Connection;
+        List<(SqlParameter Source, SqlParameter Copy)>? parameterCopies = null;
 
         try
         {
@@ -35,9 +65,14 @@ internal sealed class MooCommandExecutor
                 commandText,
                 commandType,
                 parameters,
-                commandTimeoutSeconds);
+                commandTimeoutSeconds,
+                out parameterCopies);
 
-            return await execute(command);
+            var result = await execute(command);
+
+            CopyOutputValuesBack(parameterCopies);
+
+            return result;
         }
         finally
         {
@@ -49,62 +84,80 @@ internal sealed class MooCommandExecutor
     }
 
 
+    // Internal helpers
+
+
+    // Private helpers
     private SqlCommand CreateCommand(
         MooExecutionContext context,
         string commandText,
         CommandType commandType,
         IReadOnlyList<SqlParameter>? parameters,
-        int? commandTimeoutSeconds)
+        int? commandTimeoutSeconds,
+        out List<(SqlParameter Source, SqlParameter Copy)> parameterCopies)
     {
         var command = context.Connection.CreateCommand();
 
         command.CommandText = commandText;
         command.CommandType = commandType;
+        command.CommandTimeout = ResolveCommandTimeout(commandTimeoutSeconds);
 
         if (context.Transaction is not null)
         {
             command.Transaction = context.Transaction;
         }
 
-        command.CommandTimeout = ResolveCommandTimeout(commandTimeoutSeconds);
+        parameterCopies = new List<(SqlParameter Source, SqlParameter Copy)>();
 
         if (parameters is not null)
         {
             foreach (var parameter in parameters)
             {
-                command.Parameters.Add(CloneParameter(parameter));
+                var copy = CloneParameter(parameter);
+                command.Parameters.Add(copy);
+                parameterCopies.Add((parameter, copy));
             }
         }
 
         return command;
     }
 
-
     private int ResolveCommandTimeout(int? commandTimeoutSeconds)
     {
+        if (commandTimeoutSeconds is < 0)
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(commandTimeoutSeconds),
+                "Command timeout must be zero or greater.");
+        }
+
         return commandTimeoutSeconds ?? _defaultCommandTimeoutSeconds;
     }
-
 
     /// <summary>
     /// Creates a copy of the supplied <see cref="SqlParameter"/> for use on a command.
     /// </summary>
     /// <remarks>
-    /// SqlParameter instances are mutable and become associated with a specific SqlCommand
-    /// once added to its Parameters collection. Reusing the same instance across multiple
-    /// commands can lead to unexpected behaviour and runtime errors.
-    ///
-    /// MooDb treats input parameters as caller-owned. To ensure parameters can be safely
-    /// reused (e.g. when using MooParams across multiple calls), we clone each parameter
-    /// before attaching it to a command.
-    ///
-    /// All relevant metadata is preserved, including type information, size, precision,
-    /// scale, direction, and structured (TVP) settings.
+    /// <para>
+    /// <see cref="SqlParameter"/> instances are mutable and become associated with a specific
+    /// <see cref="SqlCommand"/> once added to its parameter collection.
+    /// </para>
+    /// <para>
+    /// Reusing the same instance across multiple commands can lead to unexpected behaviour
+    /// and runtime errors.
+    /// </para>
+    /// <para>
+    /// MooDb treats input parameters as caller-owned. To ensure parameters can be safely reused,
+    /// each parameter is cloned before being attached to a command.
+    /// </para>
+    /// <para>
+    /// All relevant metadata is preserved, including type information, size, precision, scale,
+    /// direction, and structured parameter settings such as table-valued parameter type names.
+    /// </para>
     /// </remarks>
     private static SqlParameter CloneParameter(SqlParameter source)
     {
-        if (source is null)
-            throw new ArgumentNullException(nameof(source));
+        ArgumentNullException.ThrowIfNull(source);
 
         var clone = new SqlParameter
         {
@@ -130,5 +183,19 @@ internal sealed class MooCommandExecutor
         };
 
         return clone;
+    }
+
+    private static void CopyOutputValuesBack(
+        IEnumerable<(SqlParameter Source, SqlParameter Copy)> parameterCopies)
+    {
+        foreach (var (source, copy) in parameterCopies)
+        {
+            if (source.Direction is ParameterDirection.Output
+                or ParameterDirection.InputOutput
+                or ParameterDirection.ReturnValue)
+            {
+                source.Value = copy.Value;
+            }
+        }
     }
 }
