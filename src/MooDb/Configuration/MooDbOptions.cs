@@ -1,7 +1,20 @@
 ﻿namespace MooDb.Configuration;
 
+/// <summary>
+/// Configures MooDb execution and mapping behaviour.
+/// </summary>
+/// <remarks>
+/// Use <see cref="CommandTimeoutSeconds"/> to set the default command timeout and
+/// <see cref="StrictAutoMapping"/> to control auto-mapping validation behaviour.
+/// </remarks>
 public sealed class MooDbOptions
 {
+    /// <summary>
+    /// Gets or sets the default command timeout, in seconds, used when a command-specific timeout is not supplied.
+    /// </summary>
+    /// <remarks>
+    /// The default value is <c>30</c>. Specify <c>0</c> to use no timeout.
+    /// </remarks>
     public int CommandTimeoutSeconds { get; set; } = 30;
 
 

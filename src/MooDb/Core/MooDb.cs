@@ -50,10 +50,21 @@ namespace MooDb.Core
 
 
         // Properties
+        /// <summary>
+        /// Provides access to SQL text execution outside a transaction.
+        /// </summary>
+        /// <remarks>
+        /// MooDb is stored procedure-first. Use this property when you need to execute raw SQL text.
+        /// </remarks>
         public MooSql Sql { get; }
 
 
         // Constructors
+        /// <summary>
+        /// Creates a new <see cref="MooDb"/> instance that manages connections using the supplied connection string.
+        /// </summary>
+        /// <param name="connectionString">The SQL Server connection string.</param>
+        /// <param name="options">Optional MooDb configuration settings.</param>
         public MooDb(string connectionString, MooDbOptions? options = null)
         {
             _connectionString = connectionString ?? throw new ArgumentNullException(nameof(connectionString));
@@ -65,6 +76,11 @@ namespace MooDb.Core
             Sql = new MooSql(_executor, _mapper, CreateExecutionContext);
         }
 
+        /// <summary>
+        /// Creates a new <see cref="MooDb"/> instance that uses an existing openable <see cref="SqlConnection"/>.
+        /// </summary>
+        /// <param name="connection">The caller-managed SQL Server connection.</param>
+        /// <param name="options">Optional MooDb configuration settings.</param>
         public MooDb(SqlConnection connection, MooDbOptions? options = null)
         {
             _connection = connection ?? throw new ArgumentNullException(nameof(connection));
@@ -188,17 +204,52 @@ namespace MooDb.Core
                 async cmd =>
                 {
                     await using var reader = await cmd.ExecuteReaderAsync(cancellationToken);
+                    return await _mapper.MapSingleAsync<T>(reader, cancellationToken);
+                },
+                cancellationToken);
+        }
 
-                    var results = await _mapper.MapListAsync<T>(reader, cancellationToken);
+        /// <summary>
+        /// Executes a stored procedure and returns a single result mapped by a supplied custom mapper.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// Returns <c>null</c> if no rows are returned.
+        /// </para>
+        /// <para>
+        /// Returns the mapped object if exactly one row is returned.
+        /// </para>
+        /// <para>
+        /// Throws an <see cref="InvalidOperationException"/> if more than one row is returned.
+        /// </para>
+        /// <para>
+        /// The supplied <paramref name="map"/> delegate is invoked for each row and bypasses MooDb automatic mapping.
+        /// </para>
+        /// <para>
+        /// This is useful when you want explicit materialisation logic, reusable map classes, or lower mapping overhead on hot paths.
+        /// </para>
+        /// </remarks>
+        public Task<T?> SingleAsync<T>(
+            string procedure,
+            Func<SqlDataReader, T> map,
+            IReadOnlyList<SqlParameter>? parameters = null,
+            int? commandTimeoutSeconds = null,
+            CancellationToken cancellationToken = default)
+        {
+            ArgumentNullException.ThrowIfNull(map);
 
-                    if (results.Count == 0)
-                        return default;
+            var context = CreateExecutionContext();
 
-                    if (results.Count > 1)
-                        throw new InvalidOperationException(
-                            $"Expected at most one row but received {results.Count}.");
-
-                    return results[0];
+            return _executor.ExecuteAsync(
+                context,
+                procedure,
+                CommandType.StoredProcedure,
+                parameters,
+                commandTimeoutSeconds,
+                async cmd =>
+                {
+                    await using var reader = await cmd.ExecuteReaderAsync(cancellationToken);
+                    return await _mapper.MapSingleAsync(reader, map, cancellationToken);
                 },
                 cancellationToken);
         }
@@ -241,6 +292,45 @@ namespace MooDb.Core
                 {
                     await using var reader = await cmd.ExecuteReaderAsync(cancellationToken);
                     return await _mapper.MapListAsync<T>(reader, cancellationToken);
+                },
+                cancellationToken);
+        }
+
+        /// <summary>
+        /// Executes a stored procedure and maps the result set to a list of <typeparamref name="T"/> using a supplied custom mapper.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// The supplied <paramref name="map"/> delegate is invoked once per row and bypasses MooDb automatic mapping.
+        /// </para>
+        /// <para>
+        /// This is useful when the result shape does not map cleanly by convention, when you want reusable map classes, or when you want precise control over materialisation.
+        /// </para>
+        /// <para>
+        /// A custom mapper can also reduce mapping overhead for large result sets or hot paths.
+        /// </para>
+        /// </remarks>
+        public Task<List<T>> ListAsync<T>(
+            string procedure,
+            Func<SqlDataReader, T> map,
+            IReadOnlyList<SqlParameter>? parameters = null,
+            int? commandTimeoutSeconds = null,
+            CancellationToken cancellationToken = default)
+        {
+            ArgumentNullException.ThrowIfNull(map);
+
+            var context = CreateExecutionContext();
+
+            return _executor.ExecuteAsync(
+                context,
+                procedure,
+                CommandType.StoredProcedure,
+                parameters,
+                commandTimeoutSeconds,
+                async cmd =>
+                {
+                    await using var reader = await cmd.ExecuteReaderAsync(cancellationToken);
+                    return await _mapper.MapListAsync(reader, map, cancellationToken);
                 },
                 cancellationToken);
         }
