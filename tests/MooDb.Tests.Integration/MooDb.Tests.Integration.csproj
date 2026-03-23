@@ -15,6 +15,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\MooDb.Tests.Database\MooDb.Tests.Database.sqlproj" />
+    <ProjectReference Include="..\..\src\MooDb\MooDb.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Using Include="Xunit" />
   </ItemGroup>
 
