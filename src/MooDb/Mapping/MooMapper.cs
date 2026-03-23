@@ -18,20 +18,72 @@ internal sealed class MooMapper
         SqlDataReader reader,
         CancellationToken cancellationToken = default)
     {
-        var results = new List<T>();
-
         var plan = GetOrCreatePlan<T>(reader);
+        return await MapListAsync(reader, plan.Create, plan.Assign, cancellationToken);
+    }
+
+    public Task<List<T>> MapListAsync<T>(
+        SqlDataReader reader,
+        Func<SqlDataReader, T> map,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(map);
+        return MapListAsync(reader, map, assign: null, cancellationToken);
+    }
+
+    public async Task<T?> MapSingleAsync<T>(
+        SqlDataReader reader,
+        CancellationToken cancellationToken = default)
+    {
+        var plan = GetOrCreatePlan<T>(reader);
+        return await MapSingleAsync(reader, plan.Create, plan.Assign, cancellationToken);
+    }
+
+    public Task<T?> MapSingleAsync<T>(
+        SqlDataReader reader,
+        Func<SqlDataReader, T> map,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(map);
+        return MapSingleAsync(reader, map, assign: null, cancellationToken);
+    }
+
+    private static async Task<List<T>> MapListAsync<T>(
+        SqlDataReader reader,
+        Func<SqlDataReader, T> create,
+        Action<T, SqlDataReader>? assign,
+        CancellationToken cancellationToken)
+    {
+        var results = new List<T>();
 
         while (await reader.ReadAsync(cancellationToken))
         {
-            var instance = plan.Create(reader);
-
-            plan.Assign?.Invoke(instance, reader);
-
+            var instance = create(reader);
+            assign?.Invoke(instance, reader);
             results.Add(instance);
         }
 
         return results;
+    }
+
+    private static async Task<T?> MapSingleAsync<T>(
+        SqlDataReader reader,
+        Func<SqlDataReader, T> create,
+        Action<T, SqlDataReader>? assign,
+        CancellationToken cancellationToken)
+    {
+        if (!await reader.ReadAsync(cancellationToken))
+            return default;
+
+        var instance = create(reader);
+        assign?.Invoke(instance, reader);
+
+        if (await reader.ReadAsync(cancellationToken))
+        {
+            throw new InvalidOperationException("Expected at most one row but received more than one.");
+        }
+
+        return instance;
     }
 
     private MooMapPlan<T> GetOrCreatePlan<T>(SqlDataReader reader)
@@ -66,8 +118,6 @@ internal sealed class MooMapper
 
             return new MooMapPlan<T>(create, assign: null);
         }
-
-        // Fallback to property mapping
 
         var properties = type
             .GetProperties(BindingFlags.Public | BindingFlags.Instance)

@@ -33,6 +33,9 @@ public sealed class MooParams : IReadOnlyList<SqlParameter>
 
 
     // Constructors
+    /// <summary>
+    /// Creates an empty parameter collection.
+    /// </summary>
     public MooParams()
     {
     }

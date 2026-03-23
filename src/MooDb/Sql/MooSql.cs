@@ -6,6 +6,17 @@ using System.Data;
 
 namespace MooDb.Sql;
 
+/// <summary>
+/// Provides raw SQL execution for MooDb.
+/// </summary>
+/// <remarks>
+/// <para>
+/// <see cref="MooSql"/> mirrors the core query surface of <see cref="MooDb.Core.MooDb"/>, but executes SQL text instead of stored procedures.
+/// </para>
+/// <para>
+/// MooDb is designed around a stored procedure-first model. This type exists as an explicit SQL text escape hatch.
+/// </para>
+/// </remarks>
 public sealed class MooSql
 {
     // Fields
@@ -151,17 +162,52 @@ public sealed class MooSql
             async cmd =>
             {
                 await using var reader = await cmd.ExecuteReaderAsync(cancellationToken);
+                return await _mapper.MapSingleAsync<T>(reader, cancellationToken);
+            },
+            cancellationToken);
+    }
 
-                var results = await _mapper.MapListAsync<T>(reader, cancellationToken);
+    /// <summary>
+    /// Executes a SQL text query and returns a single result mapped by a supplied custom mapper.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Returns <c>null</c> if no rows are returned.
+    /// </para>
+    /// <para>
+    /// Returns the mapped object if exactly one row is returned.
+    /// </para>
+    /// <para>
+    /// Throws an <see cref="InvalidOperationException"/> if more than one row is returned.
+    /// </para>
+    /// <para>
+    /// The supplied <paramref name="map"/> delegate is invoked for each row and bypasses MooDb automatic mapping.
+    /// </para>
+    /// <para>
+    /// MooDb is designed for stored procedure usage. This overload provides a SQL text alternative with explicit row materialisation.
+    /// </para>
+    /// </remarks>
+    public Task<T?> SingleAsync<T>(
+        string sql,
+        Func<SqlDataReader, T> map,
+        IReadOnlyList<SqlParameter>? parameters = null,
+        int? commandTimeoutSeconds = null,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(map);
 
-                if (results.Count == 0)
-                    return default;
+        var context = _contextFactory();
 
-                if (results.Count > 1)
-                    throw new InvalidOperationException(
-                        $"Expected at most one row but received {results.Count}.");
-
-                return results[0];
+        return _executor.ExecuteAsync(
+            context,
+            sql,
+            CommandType.Text,
+            parameters,
+            commandTimeoutSeconds,
+            async cmd =>
+            {
+                await using var reader = await cmd.ExecuteReaderAsync(cancellationToken);
+                return await _mapper.MapSingleAsync(reader, map, cancellationToken);
             },
             cancellationToken);
     }
@@ -209,6 +255,45 @@ public sealed class MooSql
             {
                 await using var reader = await cmd.ExecuteReaderAsync(cancellationToken);
                 return await _mapper.MapListAsync<T>(reader, cancellationToken);
+            },
+            cancellationToken);
+    }
+
+    /// <summary>
+    /// Executes a SQL text query and maps the result set to a list of <typeparamref name="T"/> using a supplied custom mapper.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// The supplied <paramref name="map"/> delegate is invoked once per row and bypasses MooDb automatic mapping.
+    /// </para>
+    /// <para>
+    /// This is useful when the result shape does not map cleanly by convention, when you want reusable map classes, or when you want precise control over materialisation.
+    /// </para>
+    /// <para>
+    /// MooDb is designed for stored procedure usage. This overload provides a SQL text alternative with explicit row materialisation.
+    /// </para>
+    /// </remarks>
+    public Task<List<T>> ListAsync<T>(
+        string sql,
+        Func<SqlDataReader, T> map,
+        IReadOnlyList<SqlParameter>? parameters = null,
+        int? commandTimeoutSeconds = null,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(map);
+
+        var context = _contextFactory();
+
+        return _executor.ExecuteAsync(
+            context,
+            sql,
+            CommandType.Text,
+            parameters,
+            commandTimeoutSeconds,
+            async cmd =>
+            {
+                await using var reader = await cmd.ExecuteReaderAsync(cancellationToken);
+                return await _mapper.MapListAsync(reader, map, cancellationToken);
             },
             cancellationToken);
     }
