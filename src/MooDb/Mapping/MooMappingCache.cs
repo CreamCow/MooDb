@@ -19,7 +19,7 @@ internal static class MooMappingCache
 {
     private static readonly ConcurrentDictionary<MooMapCacheKey, object> _cache = new();
 
-    public static MooMapPlan<T> GetOrAdd<T>(
+    internal static MooMapPlan<T> GetOrAdd<T>(
         MooMapCacheKey key,
         Func<MooMapPlan<T>> factory)
     {

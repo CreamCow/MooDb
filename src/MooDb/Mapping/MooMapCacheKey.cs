@@ -16,10 +16,10 @@
 /// </remarks>
 internal sealed class MooMapCacheKey : IEquatable<MooMapCacheKey>
 {
-    public Type TargetType { get; }
-    public string[] Columns { get; }
+    internal Type TargetType { get; }
+    internal string[] Columns { get; }
 
-    public MooMapCacheKey(Type targetType, string[] columns)
+    internal MooMapCacheKey(Type targetType, string[] columns)
     {
         TargetType = targetType;
         Columns = columns;

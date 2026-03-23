@@ -1,5 +1,4 @@
 ﻿using Microsoft.Data.SqlClient;
-using MooDb.Core;
 using MooDb.Execution;
 using MooDb.Mapping;
 using System.Data;
@@ -11,7 +10,7 @@ namespace MooDb.Sql;
 /// </summary>
 /// <remarks>
 /// <para>
-/// <see cref="MooSql"/> mirrors the core query surface of <see cref="MooDb.Core.MooDb"/>, but executes SQL text instead of stored procedures.
+/// <see cref="MooSql"/> mirrors the core query surface of <see cref="MooDb.MooDb"/>, but executes SQL text instead of stored procedures.
 /// </para>
 /// <para>
 /// MooDb is designed around a stored procedure-first model. This type exists as an explicit SQL text escape hatch.

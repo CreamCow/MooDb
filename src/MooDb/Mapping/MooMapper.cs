@@ -9,12 +9,12 @@ internal sealed class MooMapper
 {
     private readonly bool _strictAutoMapping;
 
-    public MooMapper(bool strictAutoMapping)
+    internal MooMapper(bool strictAutoMapping)
     {
         _strictAutoMapping = strictAutoMapping;
     }
 
-    public async Task<List<T>> MapListAsync<T>(
+    internal async Task<List<T>> MapListAsync<T>(
         SqlDataReader reader,
         CancellationToken cancellationToken = default)
     {
@@ -22,7 +22,7 @@ internal sealed class MooMapper
         return await MapListAsync(reader, plan.Create, plan.Assign, cancellationToken);
     }
 
-    public Task<List<T>> MapListAsync<T>(
+    internal Task<List<T>> MapListAsync<T>(
         SqlDataReader reader,
         Func<SqlDataReader, T> map,
         CancellationToken cancellationToken = default)
@@ -31,7 +31,7 @@ internal sealed class MooMapper
         return MapListAsync(reader, map, assign: null, cancellationToken);
     }
 
-    public async Task<T?> MapSingleAsync<T>(
+    internal async Task<T?> MapSingleAsync<T>(
         SqlDataReader reader,
         CancellationToken cancellationToken = default)
     {
@@ -39,7 +39,7 @@ internal sealed class MooMapper
         return await MapSingleAsync(reader, plan.Create, plan.Assign, cancellationToken);
     }
 
-    public Task<T?> MapSingleAsync<T>(
+    internal Task<T?> MapSingleAsync<T>(
         SqlDataReader reader,
         Func<SqlDataReader, T> map,
         CancellationToken cancellationToken = default)

@@ -1,12 +1,11 @@
 ﻿using Microsoft.Data.SqlClient;
-using MooDb.Configuration;
 using MooDb.Execution;
 using MooDb.Mapping;
 using MooDb.Sql;
 using System.Data;
 
 
-namespace MooDb.Core
+namespace MooDb
 {
     /// <summary>
     /// Entry point for executing database operations using MooDb.
