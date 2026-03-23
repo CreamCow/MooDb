@@ -20,10 +20,10 @@ namespace MooDb.Mapping;
 /// </remarks>
 internal sealed class MooMapPlan<T>
 {
-    public Func<SqlDataReader, T> Create { get; }
-    public Action<T, SqlDataReader>? Assign { get; }
+    internal Func<SqlDataReader, T> Create { get; }
+    internal Action<T, SqlDataReader>? Assign { get; }
 
-    public MooMapPlan(
+    internal MooMapPlan(
         Func<SqlDataReader, T> create,
         Action<T, SqlDataReader>? assign)
     {

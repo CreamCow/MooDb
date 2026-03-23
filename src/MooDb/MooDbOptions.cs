@@ -1,4 +1,4 @@
-﻿namespace MooDb.Configuration;
+﻿namespace MooDb;
 
 /// <summary>
 /// Configures MooDb execution and mapping behaviour.

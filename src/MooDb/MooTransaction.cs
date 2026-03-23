@@ -4,7 +4,7 @@ using MooDb.Execution;
 using MooDb.Mapping;
 using MooDb.Sql;
 
-namespace MooDb.Core;
+namespace MooDb;
 
 /// <summary>
 /// Represents an active database transaction for executing multiple operations as a single unit of work.

@@ -2,7 +2,7 @@
 using System.Data;
 using Microsoft.Data.SqlClient;
 
-namespace MooDb.Parameters;
+namespace MooDb;
 
 /// <summary>
 /// Represents a collection of SQL Server parameters for use with MooDb commands.

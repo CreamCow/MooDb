@@ -8,7 +8,7 @@ internal sealed class MooExecutionContext
     public SqlTransaction? Transaction { get; }
     public bool OwnsConnection { get; }
 
-    public MooExecutionContext(
+    internal MooExecutionContext(
         SqlConnection connection,
         SqlTransaction? transaction,
         bool ownsConnection)

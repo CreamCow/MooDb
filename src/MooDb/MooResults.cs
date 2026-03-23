@@ -1,7 +1,7 @@
 ﻿using Microsoft.Data.SqlClient;
 using MooDb.Mapping;
 
-namespace MooDb.Core;
+namespace MooDb;
 
 /// <summary>
 /// Represents multiple result sets returned from a single database command.

@@ -27,7 +27,7 @@ internal sealed class MooCommandExecutor
     /// Creates a new command executor with the specified default timeout.
     /// </summary>
     /// <param name="defaultCommandTimeoutSeconds">The default command timeout, in seconds.</param>
-    public MooCommandExecutor(int defaultCommandTimeoutSeconds)
+    internal MooCommandExecutor(int defaultCommandTimeoutSeconds)
     {
         if (defaultCommandTimeoutSeconds < 0)
         {
@@ -52,7 +52,7 @@ internal sealed class MooCommandExecutor
     /// <param name="commandTimeoutSeconds">An optional per-command timeout override, in seconds.</param>
     /// <param name="execute">The delegate that executes the prepared <see cref="SqlCommand"/>.</param>
     /// <param name="cancellationToken">The cancellation token to observe.</param>
-    public async Task<TResult> ExecuteAsync<TResult>(
+    internal async Task<TResult> ExecuteAsync<TResult>(
         MooExecutionContext context,
         string commandText,
         CommandType commandType,
