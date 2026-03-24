@@ -85,4 +85,15 @@ public sealed class MooParamsValidationTests
 
         Assert.Throws<ArgumentException>(() => parameters.AddInt(" ", 1));
     }
+
+
+    [Fact]
+    public void AddTableValuedParameter_WhenValueIsNull_ThrowsArgumentNullException()
+    {
+        var parameters = new MooParams();
+
+        Assert.Throws<ArgumentNullException>(() =>
+            parameters.AddTableValuedParameter("@Items", null!, "Tests.udt_Items"));
+    }
+
 }

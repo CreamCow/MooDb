@@ -17,6 +17,7 @@ internal sealed class MooMultiReader : IMooMultiReader
 
     public T? Single<T>()
     {
+        ThrowIfReaderClosed();
         PrepareNextResult();
         return _mapper.MapSingle<T>(_reader);
     }
@@ -24,12 +25,14 @@ internal sealed class MooMultiReader : IMooMultiReader
     public T? Single<T>(Func<SqlDataReader, T> map)
     {
         ArgumentNullException.ThrowIfNull(map);
+        ThrowIfReaderClosed();
         PrepareNextResult();
         return _mapper.MapSingle(_reader, map);
     }
 
     public IReadOnlyList<T> List<T>()
     {
+        ThrowIfReaderClosed();
         PrepareNextResult();
         return _mapper.MapList<T>(_reader);
     }
@@ -37,12 +40,14 @@ internal sealed class MooMultiReader : IMooMultiReader
     public IReadOnlyList<T> List<T>(Func<SqlDataReader, T> map)
     {
         ArgumentNullException.ThrowIfNull(map);
+        ThrowIfReaderClosed();
         PrepareNextResult();
         return _mapper.MapList(_reader, map);
     }
 
     public T Scalar<T>()
     {
+        ThrowIfReaderClosed();
         PrepareNextResult();
         return MooScalarConverter.ConvertScalarOrDefault<T>(ReadScalarValue());
     }
@@ -77,5 +82,13 @@ internal sealed class MooMultiReader : IMooMultiReader
         }
 
         return value;
+    }
+
+    private void ThrowIfReaderClosed()
+    {
+        if (_reader.IsClosed)
+        {
+            throw new ObjectDisposedException(nameof(SqlDataReader));
+        }
     }
 }

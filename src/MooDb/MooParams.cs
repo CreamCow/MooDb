@@ -559,7 +559,7 @@ public sealed class MooParams : IReadOnlyList<SqlParameter>
     /// The <paramref name="typeName"/> must match the SQL Server user-defined table type name exactly, for example <c>Tests.udt_UserSeed</c>.
     /// </para>
     /// <para>
-    /// Table-valued parameters are input-only and are sent to SQL Server as <see cref="SqlDbType.Structured"/> parameters.
+    /// Table-valued parameters are input-only and are sent to SQL Server using the SQL Server table-valued parameter mechanism.
     /// </para>
     /// </remarks>
     public MooParams AddTableValuedParameter(
