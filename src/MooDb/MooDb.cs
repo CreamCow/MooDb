@@ -127,14 +127,15 @@ namespace MooDb
         }
 
                 /// <summary>
-        /// Executes a stored procedure and returns a required scalar value.
+        /// Executes a stored procedure and returns a scalar value.
         /// </summary>
         /// <remarks>
         /// <para>
         /// The first column of the first row is converted to <typeparamref name="T"/>.
         /// </para>
         /// <para>
-        /// An <see cref="InvalidOperationException"/> is thrown when no rows are returned or the first value is <see cref="DBNull"/>.
+        /// Returns <c>default</c> when no rows are returned or the first value is <see cref="DBNull"/>.
+        /// Use a nullable type such as <c>int?</c> when absence must be distinguishable from a non-null default value.
         /// </para>
         /// <para>
         /// This method is not affected by strict auto-mapping settings.
@@ -154,42 +155,9 @@ namespace MooDb
                 CommandType.StoredProcedure,
                 parameters,
                 commandTimeoutSeconds,
-                async cmd => MooScalarConverter.ConvertRequired<T>(await cmd.ExecuteScalarAsync(cancellationToken)),
-                cancellationToken);
-        }
-
-        /// <summary>
-        /// Executes a stored procedure and returns an optional scalar value.
-        /// </summary>
-        /// <remarks>
-        /// <para>
-        /// The first column of the first row is converted to <typeparamref name="T"/>.
-        /// </para>
-        /// <para>
-        /// Returns <c>default</c> when no rows are returned or the first value is <see cref="DBNull"/>.
-        /// </para>
-        /// <para>
-        /// This method is not affected by strict auto-mapping settings.
-        /// </para>
-        /// </remarks>
-        public Task<T?> ScalarOrDefaultAsync<T>(
-            string procedure,
-            IReadOnlyList<SqlParameter>? parameters = null,
-            int? commandTimeoutSeconds = null,
-            CancellationToken cancellationToken = default)
-        {
-            var context = CreateExecutionContext();
-
-            return _executor.ExecuteAsync(
-                context,
-                procedure,
-                CommandType.StoredProcedure,
-                parameters,
-                commandTimeoutSeconds,
                 async cmd => MooScalarConverter.ConvertOrDefault<T>(await cmd.ExecuteScalarAsync(cancellationToken)),
                 cancellationToken);
         }
-
 
         /// <summary>
         /// Executes a stored procedure and returns a single result mapped to <typeparamref name="T"/>.
