@@ -41,6 +41,19 @@ public sealed class TransactionExecuteAsyncTests
     }
 
     [Fact]
+    public async Task ExecuteAsync_WhenUsedAfterDispose_ThrowsObjectDisposedException()
+    {
+        await _fixture.ResetAsync();
+
+        var db = _fixture.CreateMooDb();
+        var transaction = await db.BeginTransactionAsync();
+        await transaction.DisposeAsync();
+
+        await Assert.ThrowsAsync<ObjectDisposedException>(() =>
+            transaction.ExecuteAsync("dbo.usp_User_Count"));
+    }
+
+    [Fact]
     public async Task ExecuteAsync_WhenDisposedWithoutCommit_RollsBackChanges()
     {
         await _fixture.ResetAsync();

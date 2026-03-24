@@ -19,7 +19,10 @@ namespace MooDb;
 /// </para>
 /// <para>
 /// Changes are committed only when <see cref="CommitAsync(CancellationToken)"/> is called.
-/// If the transaction is disposed without being committed, it is rolled back.
+/// If the transaction is disposed without being committed, MooDb attempts to roll it back automatically.
+/// </para>
+/// <para>
+/// After <see cref="CommitAsync(CancellationToken)"/>, the transaction should be considered complete and disposed.
 /// </para>
 /// <para>
 /// For SQL text execution, use the <see cref="Sql"/> property.
@@ -78,6 +81,7 @@ public sealed class MooTransaction : IAsyncDisposable
         int? commandTimeoutSeconds = null,
         CancellationToken cancellationToken = default)
     {
+        ThrowIfDisposed();
         MooGuard.AgainstNullOrWhiteSpace(procedure, nameof(procedure), "Procedure name");
 
         var context = CreateExecutionContext();
@@ -92,7 +96,7 @@ public sealed class MooTransaction : IAsyncDisposable
             cancellationToken);
     }
 
-        /// <summary>
+    /// <summary>
     /// Executes a stored procedure and returns a scalar value within the current transaction.
     /// </summary>
     /// <remarks>
@@ -113,6 +117,7 @@ public sealed class MooTransaction : IAsyncDisposable
         int? commandTimeoutSeconds = null,
         CancellationToken cancellationToken = default)
     {
+        ThrowIfDisposed();
         MooGuard.AgainstNullOrWhiteSpace(procedure, nameof(procedure), "Procedure name");
 
         var context = CreateExecutionContext();
@@ -141,7 +146,7 @@ public sealed class MooTransaction : IAsyncDisposable
     /// Throws an <see cref="InvalidOperationException"/> if more than one row is returned.
     /// </para>
     /// <para>
-    /// Mapping rules are the same as <see cref="ListAsync{T}(string, System.Func{Microsoft.Data.SqlClient.SqlDataReader, T}, System.Collections.Generic.IReadOnlyList{Microsoft.Data.SqlClient.SqlParameter}?, int?, System.Threading.CancellationToken)"/>.
+    /// Mapping rules are the same as <see cref="ListAsync{T}(string, System.Collections.Generic.IReadOnlyList{Microsoft.Data.SqlClient.SqlParameter}?, int?, System.Threading.CancellationToken)"/>.
     /// </para>
     /// </remarks>
     public Task<T?> SingleAsync<T>(
@@ -150,6 +155,7 @@ public sealed class MooTransaction : IAsyncDisposable
         int? commandTimeoutSeconds = null,
         CancellationToken cancellationToken = default)
     {
+        ThrowIfDisposed();
         MooGuard.AgainstNullOrWhiteSpace(procedure, nameof(procedure), "Procedure name");
 
         var context = CreateExecutionContext();
@@ -192,6 +198,7 @@ public sealed class MooTransaction : IAsyncDisposable
         int? commandTimeoutSeconds = null,
         CancellationToken cancellationToken = default)
     {
+        ThrowIfDisposed();
         ArgumentNullException.ThrowIfNull(map);
         MooGuard.AgainstNullOrWhiteSpace(procedure, nameof(procedure), "Procedure name");
 
@@ -235,6 +242,7 @@ public sealed class MooTransaction : IAsyncDisposable
         int? commandTimeoutSeconds = null,
         CancellationToken cancellationToken = default)
     {
+        ThrowIfDisposed();
         MooGuard.AgainstNullOrWhiteSpace(procedure, nameof(procedure), "Procedure name");
 
         var context = CreateExecutionContext();
@@ -271,6 +279,7 @@ public sealed class MooTransaction : IAsyncDisposable
         int? commandTimeoutSeconds = null,
         CancellationToken cancellationToken = default)
     {
+        ThrowIfDisposed();
         ArgumentNullException.ThrowIfNull(map);
         MooGuard.AgainstNullOrWhiteSpace(procedure, nameof(procedure), "Procedure name");
 
@@ -290,7 +299,7 @@ public sealed class MooTransaction : IAsyncDisposable
             cancellationToken);
     }
 
-        /// <summary>
+    /// <summary>
     /// Executes a stored procedure within the current transaction and materialises multiple result sets into a caller-defined result object.
     /// </summary>
     /// <typeparam name="TResult">The final result type returned by the callback.</typeparam>
@@ -320,6 +329,7 @@ public sealed class MooTransaction : IAsyncDisposable
         int? commandTimeoutSeconds = null,
         CancellationToken cancellationToken = default)
     {
+        ThrowIfDisposed();
         ArgumentNullException.ThrowIfNull(read);
         MooGuard.AgainstNullOrWhiteSpace(procedure, nameof(procedure), "Procedure name");
 
@@ -340,16 +350,15 @@ public sealed class MooTransaction : IAsyncDisposable
             cancellationToken);
     }
 
-
     /// <summary>
     /// Commits the current transaction.
     /// </summary>
     /// <remarks>
     /// <para>
-    /// Once committed, the transaction cannot be used again.
+    /// Once committed, the transaction work is complete. Dispose the transaction when you are finished with it.
     /// </para>
     /// <para>
-    /// If a transaction is disposed without being committed, MooDb rolls it back.
+    /// Dispose the transaction after commit to release the underlying transaction and, when owned, its connection.
     /// </para>
     /// </remarks>
     public async Task CommitAsync(CancellationToken cancellationToken = default)
@@ -368,7 +377,7 @@ public sealed class MooTransaction : IAsyncDisposable
     /// If the transaction has not been committed, MooDb attempts to roll it back before disposing resources.
     /// </para>
     /// <para>
-    /// The underlying connection is always disposed when the transaction is disposed.
+    /// The underlying SQL transaction is always disposed. The connection is disposed only when this <see cref="MooTransaction"/> owns it.
     /// </para>
     /// </remarks>
     public async ValueTask DisposeAsync()
@@ -397,12 +406,12 @@ public sealed class MooTransaction : IAsyncDisposable
     }
 
 
-    // Internal helpers
-
-
     // Private helpers
     private MooExecutionContext CreateExecutionContext()
-        => new(_connection, _transaction, ownsConnection: false);
+    {
+        ThrowIfDisposed();
+        return new MooExecutionContext(_connection, _transaction, ownsConnection: false);
+    }
 
     private void ThrowIfDisposed()
     {

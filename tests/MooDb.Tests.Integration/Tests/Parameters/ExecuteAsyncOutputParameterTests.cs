@@ -97,4 +97,23 @@ public sealed class ExecuteAsyncOutputParameterTests
 
         Assert.Throws<InvalidOperationException>(() => parameters.GetString("@OutputValue"));
     }
+
+
+    [Fact]
+    public async Task ExecuteAsync_WhenOutputParameterIsDbNull_AllowsNullableGettersToReturnNull()
+    {
+        await _fixture.ResetAsync();
+
+        var parameters = new MooParams()
+            .AddInt("@OutputValue", null, ParameterDirection.Output)
+            .AddNVarChar("@InputOutputText", "Seed", 100, ParameterDirection.InputOutput);
+
+        var db = _fixture.CreateMooDb();
+
+        await db.ExecuteAsync("Tests.usp_OutputParameters_DbNull", parameters);
+
+        Assert.Null(parameters.GetNullableInt("@OutputValue"));
+        Assert.Null(parameters.GetNullableString("@InputOutputText"));
+    }
+
 }

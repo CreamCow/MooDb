@@ -69,6 +69,7 @@
     <Build Include="usp_User_UpdateDisplayName.sql" />
     <Build Include="usp_Test_QueryMultiple_UserAndOrders.sql" />
     <Build Include="usp_OutputParameters.sql" />
+    <Build Include="usp_OutputParameters_DbNull.sql" />
     <Build Include="usp_QueryMultiple_UserAndOrders.sql" />
     <Build Include="usp_DateTime2_RoundTrip.sql" />
     <Build Include="udt_UserSeed.sql" />

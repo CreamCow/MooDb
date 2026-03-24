@@ -25,13 +25,13 @@ public sealed class MooSql
 
     // Constructors
     internal MooSql(
-        MooCommandExecutor executor,
-        MooMapper mapper,
-        Func<MooExecutionContext> contextFactory)
+    MooCommandExecutor executor,
+    MooMapper mapper,
+    Func<MooExecutionContext> contextFactory)
     {
-        _executor = executor;
-        _mapper = mapper;
-        _contextFactory = contextFactory;
+        _executor = executor ?? throw new ArgumentNullException(nameof(executor));
+        _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
+        _contextFactory = contextFactory ?? throw new ArgumentNullException(nameof(contextFactory));
     }
 
 

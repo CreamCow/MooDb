@@ -335,7 +335,7 @@ namespace MooDb
                 cancellationToken);
         }
 
-                /// <summary>
+        /// <summary>
         /// Executes a stored procedure and materialises multiple result sets into a caller-defined result object.
         /// </summary>
         /// <typeparam name="TResult">The final result type returned by the callback.</typeparam>
@@ -359,13 +359,14 @@ namespace MooDb
         /// </para>
         /// </remarks>
         public Task<TResult> QueryMultipleAsync<TResult>(
-            string procedure,
-            Func<IMooMultiReader, TResult> read,
-            IReadOnlyList<SqlParameter>? parameters = null,
-            int? commandTimeoutSeconds = null,
-            CancellationToken cancellationToken = default)
+             string procedure,
+             Func<IMooMultiReader, TResult> read,
+             IReadOnlyList<SqlParameter>? parameters = null,
+             int? commandTimeoutSeconds = null,
+             CancellationToken cancellationToken = default)
         {
             ArgumentNullException.ThrowIfNull(read);
+            MooGuard.AgainstNullOrWhiteSpace(procedure, nameof(procedure), "Procedure name");
 
             var context = CreateExecutionContext();
 
