@@ -17,6 +17,7 @@ public sealed class SingleAsyncTests
     [Fact]
     public async Task SingleAsync_WhenRowExists_ReturnsMappedUser()
     {
+        // Arrange
         await _fixture.ResetAsync();
 
         const int userId = 1;
@@ -62,13 +63,15 @@ public sealed class SingleAsyncTests
 
         var db = _fixture.CreateMooDb();
 
+        var parameters = new MooParams()
+            .AddInt("@UserId", userId);
+
+        // Act
         var user = await db.SingleAsync<TestUser>(
             "dbo.usp_User_GetById",
-            new[]
-            {
-            new SqlParameter("@UserId", userId)
-            });
+            parameters);
 
+        // Assert
         Assert.NotNull(user);
         Assert.Equal(userId, user.UserId);
         Assert.Equal("ada.lovelace@example.com", user.Email);
@@ -82,17 +85,20 @@ public sealed class SingleAsyncTests
     [Fact]
     public async Task SingleAsync_WhenRowDoesNotExist_ReturnsNull()
     {
+        // Arrange
         await _fixture.ResetAsync();
 
         var db = _fixture.CreateMooDb();
 
+        var parameters = new MooParams()
+            .AddInt("@UserId", 999);
+
+        // Act
         var user = await db.SingleAsync<TestUser>(
             "dbo.usp_User_GetById",
-            new[]
-            {
-            new SqlParameter("@UserId", 999)
-            });
+            parameters);
 
+        // Assert
         Assert.Null(user);
     }
 }

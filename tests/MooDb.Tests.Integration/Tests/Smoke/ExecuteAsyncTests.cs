@@ -1,4 +1,4 @@
-﻿using Microsoft.Data.SqlClient;
+using Microsoft.Data.SqlClient;
 using MooDb.Tests.Integration.Infrastructure.Fixtures;
 
 namespace MooDb.Tests.Integration.Tests.Smoke;
@@ -16,6 +16,7 @@ public sealed class ExecuteAsyncTests
     [Fact]
     public async Task ExecuteAsync_ValidInsert_ReturnsAffectedRowCount()
     {
+        // Arrange
         await _fixture.ResetAsync();
 
         var db = _fixture.CreateMooDb();
@@ -30,8 +31,10 @@ public sealed class ExecuteAsyncTests
             .AddDateTime2("@CreatedUtc", createdUtc)
             .AddDateTime2("@UpdatedUtc", null);
 
+        // Act
         var affectedRows = await db.ExecuteAsync("dbo.usp_User_Insert", parameters);
 
+        // Assert
         Assert.Equal(1, affectedRows);
 
         var userCount = await _fixture.ScalarSqlAsync<int>(
@@ -48,6 +51,7 @@ public sealed class ExecuteAsyncTests
     [Fact]
     public async Task ExecuteAsync_ValidUpdate_ReturnsAffectedRowCount()
     {
+        // Arrange
         await _fixture.ResetAsync();
 
         var createdUtc = new DateTime(2024, 01, 02, 03, 04, 05, DateTimeKind.Unspecified);
@@ -94,8 +98,10 @@ public sealed class ExecuteAsyncTests
             .AddNVarChar("@DisplayName", "Rear Admiral Grace Hopper", 200)
             .AddDateTime2("@UpdatedUtc", updatedUtc);
 
+        // Act
         var affectedRows = await db.ExecuteAsync("dbo.usp_User_UpdateDisplayName", parameters);
 
+        // Assert
         Assert.Equal(1, affectedRows);
 
         var displayName = await _fixture.ScalarSqlAsync<string>(

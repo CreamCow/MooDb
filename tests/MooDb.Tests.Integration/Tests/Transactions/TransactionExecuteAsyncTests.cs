@@ -15,11 +15,13 @@ public sealed class TransactionExecuteAsyncTests
     [Fact]
     public async Task ExecuteAsync_WhenCommitted_PersistsChanges()
     {
+        // Arrange
         await _fixture.ResetAsync();
 
         var db = _fixture.CreateMooDb();
         await using var transaction = await db.BeginTransactionAsync();
 
+        // Act
         var affectedRows = await transaction.ExecuteAsync(
             "dbo.usp_User_Insert",
             new MooParams()
@@ -32,6 +34,7 @@ public sealed class TransactionExecuteAsyncTests
 
         await transaction.CommitAsync();
 
+        // Assert
         var userCount = await _fixture.ScalarSqlAsync<int>("SELECT COUNT(*) FROM [dbo].[tbl_User];");
         var displayName = await _fixture.ScalarSqlAsync<string>("SELECT TOP (1) [DisplayName] FROM [dbo].[tbl_User];");
 
@@ -43,12 +46,14 @@ public sealed class TransactionExecuteAsyncTests
     [Fact]
     public async Task ExecuteAsync_WhenUsedAfterDispose_ThrowsObjectDisposedException()
     {
+        // Arrange
         await _fixture.ResetAsync();
 
         var db = _fixture.CreateMooDb();
         var transaction = await db.BeginTransactionAsync();
         await transaction.DisposeAsync();
 
+        // Act
         await Assert.ThrowsAsync<ObjectDisposedException>(() =>
             transaction.ExecuteAsync("dbo.usp_User_Count"));
     }
@@ -56,10 +61,12 @@ public sealed class TransactionExecuteAsyncTests
     [Fact]
     public async Task ExecuteAsync_WhenDisposedWithoutCommit_RollsBackChanges()
     {
+        // Arrange
         await _fixture.ResetAsync();
 
         var db = _fixture.CreateMooDb();
 
+        // Act
         await using (var transaction = await db.BeginTransactionAsync())
         {
             var affectedRows = await transaction.ExecuteAsync(
@@ -75,6 +82,7 @@ public sealed class TransactionExecuteAsyncTests
             Assert.Equal(1, affectedRows);
         }
 
+        // Assert
         var userCount = await _fixture.ScalarSqlAsync<int>("SELECT COUNT(*) FROM [dbo].[tbl_User];");
 
         Assert.Equal(0, userCount);

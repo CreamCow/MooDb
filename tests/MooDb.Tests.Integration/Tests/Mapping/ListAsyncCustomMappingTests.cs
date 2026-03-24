@@ -1,4 +1,4 @@
-using MooDb.Tests.Integration.Infrastructure.Fixtures;
+﻿using MooDb.Tests.Integration.Infrastructure.Fixtures;
 
 namespace MooDb.Tests.Integration.Tests.Mapping;
 
@@ -15,6 +15,7 @@ public sealed class ListAsyncCustomMappingTests
     [Fact]
     public async Task ListAsync_WhenCustomMapperSupplied_ReturnsMappedProjectionList()
     {
+        // Arrange
         await _fixture.ResetAsync();
 
         await _fixture.ExecuteSqlAsync(
@@ -29,12 +30,14 @@ public sealed class ListAsyncCustomMappingTests
 
         var db = _fixture.CreateMooDb();
 
+        // Act
         var users = await db.ListAsync(
             "dbo.usp_User_List",
             static reader => new UserProjection(
                 reader.GetInt32(reader.GetOrdinal("UserId")),
                 reader.GetString(reader.GetOrdinal("DisplayName"))));
 
+        // Assert
         Assert.Equal(2, users.Count);
         Assert.Equal(1, users[0].UserId);
         Assert.Equal("Ada Lovelace", users[0].DisplayName);

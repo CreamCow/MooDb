@@ -17,12 +17,15 @@ public sealed class ListAsyncTests
     [Fact]
     public async Task ListAsync_WhenNoRowsExist_ReturnsEmptyList()
     {
+        // Arrange
         await _fixture.ResetAsync();
 
         var db = _fixture.CreateMooDb();
 
+        // Act
         var users = await db.ListAsync<TestUser>("dbo.usp_User_List");
 
+        // Assert
         Assert.NotNull(users);
         Assert.Empty(users);
     }
@@ -30,6 +33,7 @@ public sealed class ListAsyncTests
     [Fact]
     public async Task ListAsync_WhenRowsExist_ReturnsUsersInUserIdOrder()
     {
+        // Arrange
         await _fixture.ResetAsync();
 
         var firstCreatedUtc = new DateTime(2024, 01, 02, 03, 04, 05);
@@ -92,8 +96,10 @@ public sealed class ListAsyncTests
 
         var db = _fixture.CreateMooDb();
 
+        // Act
         var users = await db.ListAsync<TestUser>("dbo.usp_User_List");
 
+        // Assert
         Assert.NotNull(users);
         Assert.Equal(2, users.Count);
 

@@ -15,26 +15,32 @@ public sealed class TransactionScalarAsyncTests
     [Fact]
     public async Task ScalarAsync_WhenSqlNullReturnedInsideTransactionAndTypeIsNonNullable_ReturnsDefaultValue()
     {
+        // Arrange
         await _fixture.ResetAsync();
 
         var db = _fixture.CreateMooDb();
         await using var transaction = await db.BeginTransactionAsync();
 
+        // Act
         var value = await transaction.Sql.ScalarAsync<int>("SELECT CAST(NULL AS int);");
 
+        // Assert
         Assert.Equal(0, value);
     }
 
     [Fact]
     public async Task ScalarAsync_WhenSqlNullReturnedInsideTransactionAndTypeIsNullable_ReturnsNull()
     {
+        // Arrange
         await _fixture.ResetAsync();
 
         var db = _fixture.CreateMooDb();
         await using var transaction = await db.BeginTransactionAsync();
 
+        // Act
         var value = await transaction.Sql.ScalarAsync<int?>("SELECT CAST(NULL AS int);");
 
+        // Assert
         Assert.Null(value);
     }
 }

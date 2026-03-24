@@ -15,10 +15,12 @@ public sealed class QueryMultipleScalarEdgeCaseTests
     [Fact]
     public async Task QueryMultipleAsync_WhenScalarResultSetHasNoRows_ReturnsDefaultValue()
     {
+        // Arrange
         await _fixture.ResetAsync();
 
         var db = _fixture.CreateMooDb();
 
+        // Act
         var result = await db.Sql.QueryMultipleAsync(
             """
             SELECT CAST(1 AS int) WHERE 1 = 0;
@@ -28,16 +30,19 @@ public sealed class QueryMultipleScalarEdgeCaseTests
                 Value = read.Scalar<int?>()
             });
 
+        // Assert
         Assert.Null(result.Value);
     }
 
     [Fact]
     public async Task QueryMultipleAsync_WhenScalarResultSetHasMoreThanOneRow_ThrowsInvalidOperationException()
     {
+        // Arrange
         await _fixture.ResetAsync();
 
         var db = _fixture.CreateMooDb();
 
+        // Act
         var ex = await Assert.ThrowsAsync<InvalidOperationException>(() =>
             db.Sql.QueryMultipleAsync(
                 """
@@ -47,6 +52,7 @@ public sealed class QueryMultipleScalarEdgeCaseTests
                 """,
                 read => read.Scalar<int>()));
 
+        // Assert
         Assert.Equal("Expected at most one row but received more than one.", ex.Message);
     }
 
