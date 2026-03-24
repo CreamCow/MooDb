@@ -27,7 +27,7 @@ namespace MooDb;
 public sealed class MooParams : IReadOnlyList<SqlParameter>
 {
     // Fields
-    private readonly List<SqlParameter> _parameters = new();
+    private readonly List<SqlParameter> _parameters = [];
     private readonly Dictionary<string, SqlParameter> _lookup =
         new(StringComparer.OrdinalIgnoreCase);
 
@@ -925,12 +925,7 @@ public sealed class MooParams : IReadOnlyList<SqlParameter>
     {
         var value = GetRawValue(name);
 
-        if (value is null)
-        {
-            throw new InvalidOperationException(MooErrorMessages.ParameterHasNoValue(name));
-        }
-
-        return value;
+        return value is null ? throw new InvalidOperationException(MooErrorMessages.ParameterHasNoValue(name)) : value;
     }
 
 
@@ -1140,13 +1135,7 @@ public sealed class MooParams : IReadOnlyList<SqlParameter>
 
     private T GetRequiredReference<T>(string name) where T : class
     {
-        var value = GetRawValue(name);
-
-        if (value is null)
-        {
-            throw new InvalidOperationException(MooErrorMessages.ParameterHasNoValue(name));
-        }
-
+        var value = GetRawValue(name) ?? throw new InvalidOperationException(MooErrorMessages.ParameterHasNoValue(name));
         if (value is T typed)
             return typed;
 

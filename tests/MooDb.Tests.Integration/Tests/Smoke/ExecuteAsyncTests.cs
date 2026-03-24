@@ -78,15 +78,14 @@ public sealed class ExecuteAsyncTests
                 @UpdatedUtc
             );
             """,
-            new[]
-            {
+            [
                 new SqlParameter("@Email", "grace.hopper@example.com"),
                 new SqlParameter("@DisplayName", "Grace Hopper"),
                 new SqlParameter("@Age", 85),
                 new SqlParameter("@IsActive", true),
                 new SqlParameter("@CreatedUtc", createdUtc),
                 new SqlParameter("@UpdatedUtc", DBNull.Value)
-            });
+            ]);
 
         var userId = await _fixture.ScalarSqlAsync<int>(
             "SELECT TOP (1) [UserId] FROM [dbo].[tbl_User];");
@@ -110,10 +109,9 @@ public sealed class ExecuteAsyncTests
             FROM [dbo].[tbl_User]
             WHERE [UserId] = @UserId;
             """,
-            new[]
-            {
+            [
                 new SqlParameter("@UserId", userId)
-            });
+            ]);
 
         Assert.Equal("Rear Admiral Grace Hopper", displayName);
 
@@ -123,10 +121,9 @@ public sealed class ExecuteAsyncTests
             FROM [dbo].[tbl_User]
             WHERE [UserId] = @UserId;
             """,
-            new[]
-            {
+            [
                 new SqlParameter("@UserId", userId)
-            });
+            ]);
 
         Assert.Equal(updatedUtc, persistedUpdatedUtc);
     }

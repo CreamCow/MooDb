@@ -50,8 +50,7 @@ public sealed class SingleAsyncTests
 
         SET IDENTITY_INSERT [dbo].[tbl_User] OFF;
         """,
-            new[]
-            {
+            [
             new SqlParameter("@UserId", userId),
             new SqlParameter("@Email", "ada.lovelace@example.com"),
             new SqlParameter("@DisplayName", "Ada Lovelace"),
@@ -59,7 +58,7 @@ public sealed class SingleAsyncTests
             new SqlParameter("@IsActive", true),
             new SqlParameter("@CreatedUtc", createdUtc),
             new SqlParameter("@UpdatedUtc", DBNull.Value)
-            });
+            ]);
 
         var db = _fixture.CreateMooDb();
 
