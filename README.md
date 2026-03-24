@@ -112,6 +112,13 @@ var count = await db.ScalarAsync<int>(
     "Users_CountActive");
 ```
 
+Use a nullable type when absence needs to be preserved distinctly from a non-null default value:
+
+```csharp
+int? count = await db.ScalarAsync<int?>(
+    "Users_CountActive");
+```
+
 ### Read a single row with auto-mapping
 
 ```csharp
