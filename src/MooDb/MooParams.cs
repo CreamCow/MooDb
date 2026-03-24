@@ -549,17 +549,20 @@ public sealed class MooParams : IReadOnlyList<SqlParameter>
 
 
     /// <summary>
-    /// Adds a structured table-valued parameter to the collection.
+    /// Adds a table-valued parameter to the collection.
     /// </summary>
     /// <remarks>
     /// <para>
-    /// Structured parameters are used for table-valued parameter scenarios and require the exact SQL Server type name.
+    /// Table-valued parameters are used to pass sets of rows to SQL Server using a user-defined table type.
     /// </para>
     /// <para>
-    /// Structured parameters are intended for input usage.
+    /// The <paramref name="typeName"/> must match the SQL Server user-defined table type name exactly, for example <c>Tests.udt_UserSeed</c>.
+    /// </para>
+    /// <para>
+    /// Table-valued parameters are input-only and are sent to SQL Server as <see cref="SqlDbType.Structured"/> parameters.
     /// </para>
     /// </remarks>
-    public MooParams AddStructured(
+    public MooParams AddTableValuedParameter(
         string name,
         object value,
         string typeName)
@@ -578,6 +581,22 @@ public sealed class MooParams : IReadOnlyList<SqlParameter>
         AddInternal(parameter);
         return this;
     }
+
+
+    /// <summary>
+    /// Adds a structured table-valued parameter to the collection.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// This method is retained as a compatibility alias for <see cref="AddTableValuedParameter(string, object, string)"/>.
+    /// </para>
+    /// </remarks>
+    [Obsolete("Use AddTableValuedParameter instead.")]
+    public MooParams AddStructured(
+        string name,
+        object value,
+        string typeName)
+        => AddTableValuedParameter(name, value, typeName);
 
 
     /// <summary>

@@ -3,7 +3,7 @@
     <Project Path="src/MooDb/MooDb.csproj" />
   </Folder>
   <Folder Name="/tests/">
-    <Project Path="MooDb.Tests.Database/MooDb.Tests.Database.sqlproj" Id="575b0854-87f3-481f-b9a3-b2c027720673">
+    <Project Path="tests/MooDb.Tests.Database/MooDb.Tests.Database.sqlproj">
       <Build />
       <Deploy />
     </Project>

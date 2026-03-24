@@ -6,7 +6,7 @@
     <Name>MooDb.Tests.Database</Name>
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectVersion>4.1</ProjectVersion>
-    <ProjectGuid>{575b0854-87f3-481f-b9a3-b2c027720673}</ProjectGuid>
+    <ProjectGuid>{2f1868a3-7502-4f09-bd62-9bf38e93e493}</ProjectGuid>
     <DSP>Microsoft.Data.Tools.Schema.Sql.Sql170DatabaseSchemaProvider</DSP>
     <OutputType>Database</OutputType>
     <RootPath>
@@ -71,5 +71,7 @@
     <Build Include="usp_OutputParameters.sql" />
     <Build Include="usp_QueryMultiple_UserAndOrders.sql" />
     <Build Include="usp_DateTime2_RoundTrip.sql" />
+    <Build Include="udt_UserSeed.sql" />
+    <Build Include="usp_User_InsertFromTable.sql" />
   </ItemGroup>
 </Project>

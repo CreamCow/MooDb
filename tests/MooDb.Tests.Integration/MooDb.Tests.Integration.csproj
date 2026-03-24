@@ -15,8 +15,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\MooDb.Tests.Database\MooDb.Tests.Database.sqlproj" />
     <ProjectReference Include="..\..\src\MooDb\MooDb.csproj" />
+    <ProjectReference Include="..\MooDb.Tests.Database\MooDb.Tests.Database.sqlproj" />
   </ItemGroup>
 
   <ItemGroup>
