@@ -13,25 +13,26 @@ public sealed class SqlScalarAsyncTests
     }
 
     [Fact]
-    public async Task SqlScalarAsync_WhenSqlNullReturned_ThrowsInvalidOperationException()
+    public async Task SqlScalarAsync_WhenSqlNullReturnedAndTypeIsNonNullable_ReturnsDefaultValue()
     {
         await _fixture.ResetAsync();
 
         var db = _fixture.CreateMooDb();
 
-        await Assert.ThrowsAsync<InvalidOperationException>(async () =>
-            await db.Sql.ScalarAsync<int>("SELECT CAST(NULL AS int);"));
+        var value = await db.Sql.ScalarAsync<int>("SELECT CAST(NULL AS int);");
+
+        Assert.Equal(0, value);
     }
 
     [Fact]
-    public async Task SqlScalarOrDefaultAsync_WhenSqlNullReturned_ReturnsDefault()
+    public async Task SqlScalarAsync_WhenSqlNullReturnedAndTypeIsNullable_ReturnsNull()
     {
         await _fixture.ResetAsync();
 
         var db = _fixture.CreateMooDb();
 
-        var value = await db.Sql.ScalarOrDefaultAsync<int>("SELECT CAST(NULL AS int);");
+        var value = await db.Sql.ScalarAsync<int?>("SELECT CAST(NULL AS int);");
 
-        Assert.Equal(0, value);
+        Assert.Null(value);
     }
 }

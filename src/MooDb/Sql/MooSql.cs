@@ -74,14 +74,15 @@ public sealed class MooSql
     }
 
         /// <summary>
-    /// Executes a SQL text query and returns a required scalar value.
+    /// Executes a SQL text query and returns a scalar value.
     /// </summary>
     /// <remarks>
     /// <para>
     /// The first column of the first row is converted to <typeparamref name="T"/>.
     /// </para>
     /// <para>
-    /// An <see cref="InvalidOperationException"/> is thrown when no rows are returned or the first value is <see cref="DBNull"/>.
+    /// Returns <c>default</c> when no rows are returned or the first value is <see cref="DBNull"/>.
+    /// Use a nullable type such as <c>int?</c> when absence must be distinguishable from a non-null default value.
     /// </para>
     /// <para>
     /// MooDb is designed for stored procedure usage. This method provides a SQL text alternative where needed.
@@ -101,42 +102,9 @@ public sealed class MooSql
             CommandType.Text,
             parameters,
             commandTimeoutSeconds,
-            async cmd => MooScalarConverter.ConvertRequired<T>(await cmd.ExecuteScalarAsync(cancellationToken)),
-            cancellationToken);
-    }
-
-    /// <summary>
-    /// Executes a SQL text query and returns an optional scalar value.
-    /// </summary>
-    /// <remarks>
-    /// <para>
-    /// The first column of the first row is converted to <typeparamref name="T"/>.
-    /// </para>
-    /// <para>
-    /// Returns <c>default</c> when no rows are returned or the first value is <see cref="DBNull"/>.
-    /// </para>
-    /// <para>
-    /// MooDb is designed for stored procedure usage. This method provides a SQL text alternative where needed.
-    /// </para>
-    /// </remarks>
-    public Task<T?> ScalarOrDefaultAsync<T>(
-        string sql,
-        IReadOnlyList<SqlParameter>? parameters = null,
-        int? commandTimeoutSeconds = null,
-        CancellationToken cancellationToken = default)
-    {
-        var context = _contextFactory();
-
-        return _executor.ExecuteAsync(
-            context,
-            sql,
-            CommandType.Text,
-            parameters,
-            commandTimeoutSeconds,
             async cmd => MooScalarConverter.ConvertOrDefault<T>(await cmd.ExecuteScalarAsync(cancellationToken)),
             cancellationToken);
     }
-
 
     /// <summary>
     /// Executes a SQL text query and returns a single result mapped to <typeparamref name="T"/>.

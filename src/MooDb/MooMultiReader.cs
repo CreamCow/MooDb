@@ -44,12 +44,6 @@ internal sealed class MooMultiReader : IMooMultiReader
     public T Scalar<T>()
     {
         PrepareNextResult();
-        return MooScalarConverter.ConvertRequired<T>(ReadScalarValue());
-    }
-
-    public T? ScalarOrDefault<T>()
-    {
-        PrepareNextResult();
         return MooScalarConverter.ConvertOrDefault<T>(ReadScalarValue());
     }
 

@@ -58,17 +58,11 @@ public interface IMooMultiReader
     IReadOnlyList<T> List<T>(Func<SqlDataReader, T> map);
 
     /// <summary>
-    /// Reads the next result set and returns a required scalar value.
+    /// Reads the next result set and returns a scalar value.
     /// </summary>
     /// <typeparam name="T">The target scalar type.</typeparam>
-    /// <returns>The converted scalar value.</returns>
-    /// <exception cref="InvalidOperationException">Thrown when the result set has no rows or the first value is <see cref="DBNull"/>.</exception>
+    /// <returns>
+    /// The converted scalar value, or <c>default</c> when the result set has no rows or the first value is <see cref="DBNull"/>.
+    /// </returns>
     T Scalar<T>();
-
-    /// <summary>
-    /// Reads the next result set and returns an optional scalar value.
-    /// </summary>
-    /// <typeparam name="T">The target scalar type.</typeparam>
-    /// <returns>The converted scalar value, or <c>default</c> when the result set has no rows or the first value is <see cref="DBNull"/>.</returns>
-    T? ScalarOrDefault<T>();
 }
