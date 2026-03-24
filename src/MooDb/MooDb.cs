@@ -126,24 +126,21 @@ namespace MooDb
                 cancellationToken);
         }
 
-        /// <summary>
-        /// Executes a stored procedure and returns a single scalar value.
+                /// <summary>
+        /// Executes a stored procedure and returns a required scalar value.
         /// </summary>
         /// <remarks>
         /// <para>
-        /// If the result is <c>null</c> or <see cref="DBNull"/>, <c>null</c> is returned.
+        /// The first column of the first row is converted to <typeparamref name="T"/>.
         /// </para>
         /// <para>
-        /// Otherwise, the value is converted to <typeparamref name="T"/> using light type conversion.
-        /// </para>
-        /// <para>
-        /// An exception is thrown if the value cannot be converted to the target type.
+        /// An <see cref="InvalidOperationException"/> is thrown when no rows are returned or the first value is <see cref="DBNull"/>.
         /// </para>
         /// <para>
         /// This method is not affected by strict auto-mapping settings.
         /// </para>
         /// </remarks>
-        public Task<T?> ScalarAsync<T>(
+        public Task<T> ScalarAsync<T>(
             string procedure,
             IReadOnlyList<SqlParameter>? parameters = null,
             int? commandTimeoutSeconds = null,
@@ -157,17 +154,42 @@ namespace MooDb
                 CommandType.StoredProcedure,
                 parameters,
                 commandTimeoutSeconds,
-                async cmd =>
-                {
-                    var result = await cmd.ExecuteScalarAsync(cancellationToken);
-
-                    if (result is null || result is DBNull)
-                        return default;
-
-                    return (T)Convert.ChangeType(result, typeof(T));
-                },
+                async cmd => MooScalarConverter.ConvertRequired<T>(await cmd.ExecuteScalarAsync(cancellationToken)),
                 cancellationToken);
         }
+
+        /// <summary>
+        /// Executes a stored procedure and returns an optional scalar value.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// The first column of the first row is converted to <typeparamref name="T"/>.
+        /// </para>
+        /// <para>
+        /// Returns <c>default</c> when no rows are returned or the first value is <see cref="DBNull"/>.
+        /// </para>
+        /// <para>
+        /// This method is not affected by strict auto-mapping settings.
+        /// </para>
+        /// </remarks>
+        public Task<T?> ScalarOrDefaultAsync<T>(
+            string procedure,
+            IReadOnlyList<SqlParameter>? parameters = null,
+            int? commandTimeoutSeconds = null,
+            CancellationToken cancellationToken = default)
+        {
+            var context = CreateExecutionContext();
+
+            return _executor.ExecuteAsync(
+                context,
+                procedure,
+                CommandType.StoredProcedure,
+                parameters,
+                commandTimeoutSeconds,
+                async cmd => MooScalarConverter.ConvertOrDefault<T>(await cmd.ExecuteScalarAsync(cancellationToken)),
+                cancellationToken);
+        }
+
 
         /// <summary>
         /// Executes a stored procedure and returns a single result mapped to <typeparamref name="T"/>.
@@ -334,31 +356,38 @@ namespace MooDb
                 cancellationToken);
         }
 
-        /// <summary>
-        /// Executes a stored procedure and returns multiple result sets.
+                /// <summary>
+        /// Executes a stored procedure and materialises multiple result sets into a caller-defined result object.
         /// </summary>
+        /// <typeparam name="TResult">The final result type returned by the callback.</typeparam>
+        /// <param name="procedure">The stored procedure name.</param>
+        /// <param name="read">
+        /// A callback that consumes result sets sequentially through <see cref="IMooMultiReader"/> and returns the final materialised result.
+        /// </param>
+        /// <param name="parameters">Optional command parameters.</param>
+        /// <param name="commandTimeoutSeconds">An optional per-command timeout override, in seconds.</param>
+        /// <param name="cancellationToken">The cancellation token to observe.</param>
+        /// <returns>The caller-defined result produced by <paramref name="read"/>.</returns>
         /// <remarks>
         /// <para>
-        /// Executes the stored procedure and returns a <see cref="MooResults"/> instance
-        /// for sequentially reading result sets.
+        /// Each call on <paramref name="read"/> consumes the next result set in order.
         /// </para>
         /// <para>
-        /// Each call to <see cref="MooResults.ReadAsync{T}(CancellationToken)"/> consumes the next result set.
+        /// MooDb fully materialises the results inside the method call, so callers do not manage live reader objects.
         /// </para>
         /// <para>
-        /// Result sets must be read in order and cannot be revisited.
-        /// </para>
-        /// <para>
-        /// The underlying data reader is owned by <see cref="MooResults"/> and is disposed
-        /// when the results are disposed.
+        /// Attempting to read beyond the available result sets throws an <see cref="InvalidOperationException"/>.
         /// </para>
         /// </remarks>
-        public Task<MooResults> QueryMultipleAsync(
+        public Task<TResult> QueryMultipleAsync<TResult>(
             string procedure,
+            Func<IMooMultiReader, TResult> read,
             IReadOnlyList<SqlParameter>? parameters = null,
             int? commandTimeoutSeconds = null,
             CancellationToken cancellationToken = default)
         {
+            ArgumentNullException.ThrowIfNull(read);
+
             var context = CreateExecutionContext();
 
             return _executor.ExecuteAsync(
@@ -369,11 +398,13 @@ namespace MooDb
                 commandTimeoutSeconds,
                 async cmd =>
                 {
-                    var reader = await cmd.ExecuteReaderAsync(cancellationToken);
-                    return new MooResults(reader, _mapper);
+                    await using var reader = await cmd.ExecuteReaderAsync(cancellationToken);
+                    var multiReader = new MooMultiReader(reader, _mapper);
+                    return read(multiReader);
                 },
                 cancellationToken);
         }
+
 
         /// <summary>
         /// Begins a new database transaction.

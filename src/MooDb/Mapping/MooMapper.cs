@@ -14,6 +14,34 @@ internal sealed class MooMapper
         _strictAutoMapping = strictAutoMapping;
     }
 
+    internal List<T> MapList<T>(SqlDataReader reader)
+    {
+        var plan = GetOrCreatePlan<T>(reader);
+        return MapList(reader, plan.Create, plan.Assign);
+    }
+
+    internal List<T> MapList<T>(
+        SqlDataReader reader,
+        Func<SqlDataReader, T> map)
+    {
+        ArgumentNullException.ThrowIfNull(map);
+        return MapList(reader, map, assign: null);
+    }
+
+    internal T? MapSingle<T>(SqlDataReader reader)
+    {
+        var plan = GetOrCreatePlan<T>(reader);
+        return MapSingle(reader, plan.Create, plan.Assign);
+    }
+
+    internal T? MapSingle<T>(
+        SqlDataReader reader,
+        Func<SqlDataReader, T> map)
+    {
+        ArgumentNullException.ThrowIfNull(map);
+        return MapSingle(reader, map, assign: null);
+    }
+
     internal async Task<List<T>> MapListAsync<T>(
         SqlDataReader reader,
         CancellationToken cancellationToken = default)
@@ -48,6 +76,23 @@ internal sealed class MooMapper
         return MapSingleAsync(reader, map, assign: null, cancellationToken);
     }
 
+    private static List<T> MapList<T>(
+        SqlDataReader reader,
+        Func<SqlDataReader, T> create,
+        Action<T, SqlDataReader>? assign)
+    {
+        var results = new List<T>();
+
+        while (reader.Read())
+        {
+            var instance = create(reader);
+            assign?.Invoke(instance, reader);
+            results.Add(instance);
+        }
+
+        return results;
+    }
+
     private static async Task<List<T>> MapListAsync<T>(
         SqlDataReader reader,
         Func<SqlDataReader, T> create,
@@ -64,6 +109,25 @@ internal sealed class MooMapper
         }
 
         return results;
+    }
+
+    private static T? MapSingle<T>(
+        SqlDataReader reader,
+        Func<SqlDataReader, T> create,
+        Action<T, SqlDataReader>? assign)
+    {
+        if (!reader.Read())
+            return default;
+
+        var instance = create(reader);
+        assign?.Invoke(instance, reader);
+
+        if (reader.Read())
+        {
+            throw new InvalidOperationException("Expected at most one row but received more than one.");
+        }
+
+        return instance;
     }
 
     private static async Task<T?> MapSingleAsync<T>(
