@@ -1,4 +1,3 @@
-using Microsoft.Data.SqlClient;
 using MooDb.Tests.Integration.Infrastructure.Fixtures;
 
 namespace MooDb.Tests.Integration.Tests.Mapping;
@@ -16,6 +15,7 @@ public sealed class SingleAsyncCustomMappingTests
     [Fact]
     public async Task SingleAsync_WhenCustomMapperSupplied_ReturnsMappedProjection()
     {
+        // Arrange
         await _fixture.ResetAsync();
 
         await _fixture.ExecuteSqlAsync(
@@ -27,17 +27,17 @@ public sealed class SingleAsyncCustomMappingTests
             """);
 
         var db = _fixture.CreateMooDb();
+        var parameters = new MooParams().AddInt("@UserId", 1);
 
+        // Act
         var user = await db.SingleAsync(
             "dbo.usp_User_GetById",
             static reader => new UserProjection(
                 reader.GetInt32(reader.GetOrdinal("UserId")),
                 reader.GetString(reader.GetOrdinal("DisplayName"))),
-            new[]
-            {
-                new SqlParameter("@UserId", 1)
-            });
+            parameters);
 
+        // Assert
         Assert.NotNull(user);
         Assert.Equal(1, user!.UserId);
         Assert.Equal("Ada Lovelace", user.DisplayName);

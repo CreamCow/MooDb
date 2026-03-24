@@ -1,4 +1,4 @@
-﻿using MooDb.Tests.Integration.Infrastructure.Fixtures;
+using MooDb.Tests.Integration.Infrastructure.Fixtures;
 using MooDb.Tests.Integration.Infrastructure.Models;
 
 namespace MooDb.Tests.Integration.Tests.Smoke;
@@ -16,10 +16,12 @@ public sealed class SqlSingleAndListAsyncTests
     [Fact]
     public async Task SqlSingleAsync_WhenNoRowsExist_ReturnsNull()
     {
+        // Arrange
         await _fixture.ResetAsync();
 
         var db = _fixture.CreateMooDb();
 
+        // Act
         var user = await db.Sql.SingleAsync<TestUser>(
             """
             SELECT
@@ -34,12 +36,14 @@ public sealed class SqlSingleAndListAsyncTests
             WHERE [UserId] = 999;
             """);
 
+        // Assert
         Assert.Null(user);
     }
 
     [Fact]
     public async Task SqlSingleAsync_WhenMoreThanOneRowReturned_ThrowsInvalidOperationException()
     {
+        // Arrange
         await _fixture.ResetAsync();
 
         await _fixture.ExecuteSqlAsync(
@@ -60,6 +64,7 @@ public sealed class SqlSingleAndListAsyncTests
 
         var db = _fixture.CreateMooDb();
 
+        // Act
         await Assert.ThrowsAsync<InvalidOperationException>(() =>
             db.Sql.SingleAsync<TestUser>(
                 """
@@ -79,10 +84,12 @@ public sealed class SqlSingleAndListAsyncTests
     [Fact]
     public async Task SqlListAsync_WhenNoRowsExist_ReturnsEmptyList()
     {
+        // Arrange
         await _fixture.ResetAsync();
 
         var db = _fixture.CreateMooDb();
 
+        // Act
         var users = await db.Sql.ListAsync<TestUser>(
             """
             SELECT
@@ -97,6 +104,7 @@ public sealed class SqlSingleAndListAsyncTests
             WHERE [UserId] = 999;
             """);
 
+        // Assert
         Assert.NotNull(users);
         Assert.Empty(users);
     }

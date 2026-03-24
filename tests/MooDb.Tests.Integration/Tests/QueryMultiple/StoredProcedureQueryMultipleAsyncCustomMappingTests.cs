@@ -1,4 +1,3 @@
-using Microsoft.Data.SqlClient;
 using MooDb.Tests.Integration.Infrastructure.Fixtures;
 
 namespace MooDb.Tests.Integration.Tests.QueryMultiple;
@@ -16,6 +15,7 @@ public sealed class StoredProcedureQueryMultipleAsyncCustomMappingTests
     [Fact]
     public async Task QueryMultipleAsync_WhenCustomRowMappersAreUsed_ReturnsExpectedProjection()
     {
+        // Arrange
         await _fixture.ResetAsync();
 
         await _fixture.ExecuteSqlAsync(
@@ -34,7 +34,9 @@ public sealed class StoredProcedureQueryMultipleAsyncCustomMappingTests
             """);
 
         var db = _fixture.CreateMooDb();
+        var parameters = new MooParams().AddInt("@UserId", 1);
 
+        // Act
         var result = await db.QueryMultipleAsync(
             "Tests.usp_QueryMultiple_UserAndOrders",
             read => new CustomMappedUserAndOrdersResult
@@ -47,11 +49,9 @@ public sealed class StoredProcedureQueryMultipleAsyncCustomMappingTests
                     reader.GetString(reader.GetOrdinal("OrderNumber")),
                     reader.GetDecimal(reader.GetOrdinal("Total"))))
             },
-            new[]
-            {
-                new SqlParameter("@UserId", 1)
-            });
+            parameters);
 
+        // Assert
         Assert.NotNull(result.User);
         Assert.Equal(1, result.User!.UserId);
         Assert.Equal("Ada Lovelace", result.User.DisplayName);

@@ -1,4 +1,3 @@
-using Microsoft.Data.SqlClient;
 using MooDb.Tests.Integration.Infrastructure.Fixtures;
 using MooDb.Tests.Integration.Infrastructure.Models;
 
@@ -17,6 +16,7 @@ public sealed class TransactionQueryMultipleAsyncTests
     [Fact]
     public async Task QueryMultipleAsync_WhenExecutedInsideTransaction_ReturnsExpectedShape()
     {
+        // Arrange
         await _fixture.ResetAsync();
 
         await _fixture.ExecuteSqlAsync(
@@ -34,7 +34,9 @@ public sealed class TransactionQueryMultipleAsyncTests
 
         var db = _fixture.CreateMooDb();
         await using var transaction = await db.BeginTransactionAsync();
+        var parameters = new MooParams().AddInt("@UserId", 1);
 
+        // Act
         var result = await transaction.QueryMultipleAsync(
             "Tests.usp_QueryMultiple_UserAndOrders",
             read => new TransactionUserAndOrdersResult
@@ -42,11 +44,9 @@ public sealed class TransactionQueryMultipleAsyncTests
                 User = read.Single<TestUser>(),
                 Orders = read.List<TestOrder>()
             },
-            new[]
-            {
-                new SqlParameter("@UserId", 1)
-            });
+            parameters);
 
+        // Assert
         Assert.NotNull(result.User);
         Assert.Equal(1, result.User!.UserId);
         Assert.Single(result.Orders);

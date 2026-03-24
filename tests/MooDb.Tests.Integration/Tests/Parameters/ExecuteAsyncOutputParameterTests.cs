@@ -1,5 +1,4 @@
-using System.Data;
-using Microsoft.Data.SqlClient;
+﻿using System.Data;
 using MooDb.Tests.Integration.Infrastructure.Fixtures;
 
 namespace MooDb.Tests.Integration.Tests.Parameters;
@@ -17,6 +16,7 @@ public sealed class ExecuteAsyncOutputParameterTests
     [Fact]
     public async Task ExecuteAsync_WhenUsingMooParams_SetsOutputAndInputOutputValues()
     {
+        // Arrange
         await _fixture.ResetAsync();
 
         var parameters = new MooParams()
@@ -26,46 +26,39 @@ public sealed class ExecuteAsyncOutputParameterTests
 
         var db = _fixture.CreateMooDb();
 
+        // Act
         await db.ExecuteAsync("Tests.usp_OutputParameters", parameters);
 
+        // Assert
         Assert.Equal(42, parameters.GetInt("@OutputValue"));
         Assert.Equal("Start_Processed", parameters.GetString("@InputOutputText"));
     }
 
     [Fact]
-    public async Task ExecuteAsync_WhenUsingRawSqlParameters_CopiesOutputValuesBackToCallerParameters()
+    public async Task ExecuteAsync_WhenUsingMooParams_CopiesOutputValuesBackToCallerParameters()
     {
+        // Arrange
         await _fixture.ResetAsync();
 
-        var output = new SqlParameter("@OutputValue", SqlDbType.Int)
-        {
-            Direction = ParameterDirection.Output
-        };
-
-        var inputOutput = new SqlParameter("@InputOutputText", SqlDbType.NVarChar, 100)
-        {
-            Direction = ParameterDirection.InputOutput,
-            Value = "Raw"
-        };
-
-        var parameters = new SqlParameter[]
-        {
-            new("@InputValue", 9),
-            output,
-            inputOutput
-        };
+        var parameters = new MooParams()
+            .AddInt("@InputValue", 9)
+            .AddInt("@OutputValue", null, ParameterDirection.Output)
+            .AddNVarChar("@InputOutputText", "Raw", 100, ParameterDirection.InputOutput);
 
         var db = _fixture.CreateMooDb();
 
+        // Act
         await db.ExecuteAsync("Tests.usp_OutputParameters", parameters);
 
-        Assert.Equal(10, (int)output.Value);
-        Assert.Equal("Raw_Processed", (string)inputOutput.Value);
+        // Assert
+        Assert.Equal(10, parameters.GetInt("@OutputValue"));
+        Assert.Equal("Raw_Processed", parameters.GetString("@InputOutputText"));
     }
 
     [Fact]
     public async Task ExecuteAsync_WhenInputOutputParameterStartsNull_GetNullableStringReturnsNull()
     {
+        // Arrange
         await _fixture.ResetAsync();
 
         var parameters = new MooParams()
@@ -75,8 +68,10 @@ public sealed class ExecuteAsyncOutputParameterTests
 
         var db = _fixture.CreateMooDb();
 
+        // Act
         await db.ExecuteAsync("Tests.usp_OutputParameters", parameters);
 
+        // Assert
         Assert.Equal(2, parameters.GetInt("@OutputValue"));
         Assert.Null(parameters.GetNullableString("@InputOutputText"));
     }
@@ -84,6 +79,7 @@ public sealed class ExecuteAsyncOutputParameterTests
     [Fact]
     public async Task ExecuteAsync_WhenOutputValueReadAsWrongType_ThrowsInvalidOperationException()
     {
+        // Arrange
         await _fixture.ResetAsync();
 
         var parameters = new MooParams()
@@ -93,15 +89,17 @@ public sealed class ExecuteAsyncOutputParameterTests
 
         var db = _fixture.CreateMooDb();
 
+        // Act
         await db.ExecuteAsync("Tests.usp_OutputParameters", parameters);
 
+        // Assert
         Assert.Throws<InvalidOperationException>(() => parameters.GetString("@OutputValue"));
     }
-
 
     [Fact]
     public async Task ExecuteAsync_WhenOutputParameterIsDbNull_AllowsNullableGettersToReturnNull()
     {
+        // Arrange
         await _fixture.ResetAsync();
 
         var parameters = new MooParams()
@@ -110,10 +108,11 @@ public sealed class ExecuteAsyncOutputParameterTests
 
         var db = _fixture.CreateMooDb();
 
+        // Act
         await db.ExecuteAsync("Tests.usp_OutputParameters_DbNull", parameters);
 
+        // Assert
         Assert.Null(parameters.GetNullableInt("@OutputValue"));
         Assert.Null(parameters.GetNullableString("@InputOutputText"));
     }
-
 }

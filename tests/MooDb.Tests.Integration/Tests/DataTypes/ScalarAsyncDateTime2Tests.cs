@@ -1,4 +1,4 @@
-using MooDb.Tests.Integration.Infrastructure.Fixtures;
+﻿using MooDb.Tests.Integration.Infrastructure.Fixtures;
 
 namespace MooDb.Tests.Integration.Tests.DataTypes;
 
@@ -15,42 +15,51 @@ public sealed class ScalarAsyncDateTime2Tests
     [Fact]
     public async Task ScalarAsync_WhenDateTime2MinValueRoundTrips_ReturnsExpectedValue()
     {
+        // Arrange
         await _fixture.ResetAsync();
 
         var expected = DateTime.MinValue;
         var parameters = new MooParams().AddDateTime2("@Value", expected, scale: 7);
         var db = _fixture.CreateMooDb();
 
+        // Act
         var actual = await db.ScalarAsync<DateTime>("Tests.usp_DateTime2_RoundTrip", parameters);
 
+        // Assert
         Assert.Equal(expected, actual);
     }
 
     [Fact]
     public async Task ScalarAsync_WhenDateTime2MaxValueRoundTrips_ReturnsExpectedValue()
     {
+        // Arrange
         await _fixture.ResetAsync();
 
         var expected = DateTime.MaxValue;
         var parameters = new MooParams().AddDateTime2("@Value", expected, scale: 7);
         var db = _fixture.CreateMooDb();
 
+        // Act
         var actual = await db.ScalarAsync<DateTime>("Tests.usp_DateTime2_RoundTrip", parameters);
 
+        // Assert
         Assert.Equal(expected, actual);
     }
 
     [Fact]
     public async Task ScalarAsync_WhenDateTime2HasSevenDigitPrecision_PreservesPrecision()
     {
+        // Arrange
         await _fixture.ResetAsync();
 
         var expected = new DateTime(2024, 01, 02, 03, 04, 05, 123).AddTicks(4567);
         var parameters = new MooParams().AddDateTime2("@Value", expected, scale: 7);
         var db = _fixture.CreateMooDb();
 
+        // Act
         var actual = await db.ScalarAsync<DateTime>("Tests.usp_DateTime2_RoundTrip", parameters);
 
+        // Assert
         Assert.Equal(expected, actual);
         Assert.Equal(expected.Ticks, actual.Ticks);
     }

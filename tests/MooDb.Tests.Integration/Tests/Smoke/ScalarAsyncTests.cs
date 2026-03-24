@@ -16,18 +16,22 @@ public sealed class ScalarAsyncTests
     [Fact]
     public async Task ScalarAsync_WhenNoRowsExist_ReturnsZero()
     {
+        // Arrange
         await _fixture.ResetAsync();
 
         var db = _fixture.CreateMooDb();
 
+        // Act
         var count = await db.ScalarAsync<int>("dbo.usp_User_Count");
 
+        // Assert
         Assert.Equal(0, count);
     }
 
     [Fact]
     public async Task ScalarAsync_WhenRowsExist_ReturnsUserCount()
     {
+        // Arrange
         await _fixture.ResetAsync();
 
         await _fixture.ExecuteSqlAsync(
@@ -78,8 +82,10 @@ public sealed class ScalarAsyncTests
 
         var db = _fixture.CreateMooDb();
 
+        // Act
         var count = await db.ScalarAsync<int>("dbo.usp_User_Count");
 
+        // Assert
         Assert.Equal(2, count);
     }
 }

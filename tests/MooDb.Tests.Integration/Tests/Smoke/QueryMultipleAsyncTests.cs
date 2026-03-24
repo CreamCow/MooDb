@@ -1,4 +1,4 @@
-﻿using Microsoft.Data.SqlClient;
+using Microsoft.Data.SqlClient;
 using MooDb.Tests.Integration.Infrastructure.Fixtures;
 using MooDb.Tests.Integration.Infrastructure.Models;
 
@@ -17,6 +17,7 @@ public sealed class QueryMultipleAsyncTests
     [Fact]
     public async Task QueryMultipleAsync_WhenUserAndOrdersExist_ReturnsExpectedResultSets()
     {
+        // Arrange
         await _fixture.ResetAsync();
 
         const int userId = 1;
@@ -101,7 +102,9 @@ public sealed class QueryMultipleAsyncTests
             });
 
         var db = _fixture.CreateMooDb();
+        var parameters = new MooParams().AddInt("@UserId", userId);
 
+        // Act
         var result = await db.QueryMultipleAsync(
             "Tests.usp_QueryMultiple_UserAndOrders",
             read => new UserAndOrdersResult
@@ -109,11 +112,9 @@ public sealed class QueryMultipleAsyncTests
                 User = read.Single<TestUser>(),
                 Orders = read.List<TestOrder>()
             },
-            new[]
-            {
-                new SqlParameter("@UserId", userId)
-            });
+            parameters);
 
+        // Assert
         Assert.NotNull(result.User);
         Assert.Equal(userId, result.User!.UserId);
         Assert.Equal("ada.lovelace@example.com", result.User.Email);
@@ -142,6 +143,7 @@ public sealed class QueryMultipleAsyncTests
     [Fact]
     public async Task QueryMultipleAsync_WhenReadPastAvailableResultSets_ThrowsInvalidOperationException()
     {
+        // Arrange
         await _fixture.ResetAsync();
 
         const int userId = 1;
@@ -185,7 +187,9 @@ public sealed class QueryMultipleAsyncTests
             });
 
         var db = _fixture.CreateMooDb();
+        var parameters = new MooParams().AddInt("@UserId", userId);
 
+        // Act
         var ex = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
             await db.QueryMultipleAsync(
                 "Tests.usp_QueryMultiple_UserAndOrders",
@@ -197,11 +201,9 @@ public sealed class QueryMultipleAsyncTests
 
                     return 0;
                 },
-                new[]
-                {
-                    new SqlParameter("@UserId", userId)
-                }));
+                parameters));
 
+        // Assert
         Assert.Equal("No more result sets are available.", ex.Message);
     }
 

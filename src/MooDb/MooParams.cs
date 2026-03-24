@@ -584,22 +584,6 @@ public sealed class MooParams : IReadOnlyList<SqlParameter>
 
 
     /// <summary>
-    /// Adds a table-valued parameter to the collection using the legacy compatibility alias.
-    /// </summary>
-    /// <remarks>
-    /// <para>
-    /// This method is retained as a compatibility alias for <see cref="AddTableValuedParameter(string, object, string)"/>.
-    /// </para>
-    /// </remarks>
-    [Obsolete("Use AddTableValuedParameter instead.")]
-    public MooParams AddStructured(
-        string name,
-        object value,
-        string typeName)
-        => AddTableValuedParameter(name, value, typeName);
-
-
-    /// <summary>
     /// Gets a <c>bit</c> output value.
     /// </summary>
     /// <remarks>

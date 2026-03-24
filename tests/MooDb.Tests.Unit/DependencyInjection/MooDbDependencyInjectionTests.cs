@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection;
 using MooDb.DependencyInjection;
 
 namespace MooDb.Tests.Unit.DependencyInjection;
@@ -8,13 +8,16 @@ public sealed class MooDbDependencyInjectionTests
     [Fact]
     public void AddMooDbFactory_WhenCalled_RegistersFactoryOptions()
     {
+        // Arrange
         var services = new ServiceCollection();
 
+        // Act
         services.AddMooDbFactory();
 
         var optionsDescriptor = services.SingleOrDefault(x =>
             x.ServiceType == typeof(MooDbFactoryOptions));
 
+        // Assert
         Assert.NotNull(optionsDescriptor);
         Assert.Equal(ServiceLifetime.Singleton, optionsDescriptor.Lifetime);
     }
@@ -22,13 +25,16 @@ public sealed class MooDbDependencyInjectionTests
     [Fact]
     public void AddMooDbFactory_WhenCalled_RegistersFactoryService()
     {
+        // Arrange
         var services = new ServiceCollection();
 
+        // Act
         services.AddMooDbFactory();
 
         var factoryDescriptor = services.SingleOrDefault(x =>
             x.ServiceType == typeof(IMooDbFactory));
 
+        // Assert
         Assert.NotNull(factoryDescriptor);
         Assert.Equal(ServiceLifetime.Singleton, factoryDescriptor.Lifetime);
     }
@@ -36,8 +42,10 @@ public sealed class MooDbDependencyInjectionTests
     [Fact]
     public void AddMooDbFactory_WithConfigure_AppliesConfiguredDefaults()
     {
+        // Arrange
         var services = new ServiceCollection();
 
+        // Act
         services.AddMooDbFactory(options =>
         {
             options.CommandTimeoutSeconds = 123;
@@ -49,6 +57,7 @@ public sealed class MooDbDependencyInjectionTests
 
         var options = Assert.IsType<MooDbFactoryOptions>(optionsDescriptor.ImplementationInstance);
 
+        // Assert
         Assert.Equal(123, options.CommandTimeoutSeconds);
         Assert.True(options.StrictAutoMapping);
     }

@@ -1,4 +1,4 @@
-using System.Data;
+﻿using System.Data;
 using MooDb.Tests.Integration.Infrastructure.Fixtures;
 
 namespace MooDb.Tests.Integration.Tests.Parameters;
@@ -16,6 +16,7 @@ public sealed class TableValuedParameterTests
     [Fact]
     public async Task ExecuteAsync_WhenUsingTableValuedParameter_InsertsRows()
     {
+        // Arrange
         await _fixture.ResetAsync();
 
         var table = CreateUserSeedTable();
@@ -27,8 +28,10 @@ public sealed class TableValuedParameterTests
 
         var db = _fixture.CreateMooDb();
 
+        // Act
         var affectedRows = await db.ExecuteAsync("Tests.usp_User_InsertFromTable", parameters);
 
+        // Assert
         Assert.Equal(2, affectedRows);
         Assert.Equal(2, await _fixture.ScalarSqlAsync<int>("SELECT COUNT(*) FROM [dbo].[tbl_User];"));
     }
@@ -36,6 +39,7 @@ public sealed class TableValuedParameterTests
     [Fact]
     public async Task ExecuteAsync_WhenUsingEmptyTableValuedParameter_InsertsNoRows()
     {
+        // Arrange
         await _fixture.ResetAsync();
 
         var table = CreateUserSeedTable();
@@ -45,8 +49,10 @@ public sealed class TableValuedParameterTests
 
         var db = _fixture.CreateMooDb();
 
+        // Act
         var affectedRows = await db.ExecuteAsync("Tests.usp_User_InsertFromTable", parameters);
 
+        // Assert
         Assert.Equal(0, affectedRows);
         Assert.Equal(0, await _fixture.ScalarSqlAsync<int>("SELECT COUNT(*) FROM [dbo].[tbl_User];"));
     }

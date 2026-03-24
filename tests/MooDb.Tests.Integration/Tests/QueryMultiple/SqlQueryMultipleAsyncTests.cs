@@ -1,4 +1,4 @@
-using MooDb.Tests.Integration.Infrastructure.Fixtures;
+﻿using MooDb.Tests.Integration.Infrastructure.Fixtures;
 
 namespace MooDb.Tests.Integration.Tests.QueryMultiple;
 
@@ -15,6 +15,7 @@ public sealed class SqlQueryMultipleAsyncTests
     [Fact]
     public async Task QueryMultipleAsync_WhenUsingSqlSurface_SupportsScalarSingleAndListCombination()
     {
+        // Arrange
         await _fixture.ResetAsync();
 
         await _fixture.ExecuteSqlAsync(
@@ -34,6 +35,7 @@ public sealed class SqlQueryMultipleAsyncTests
 
         var db = _fixture.CreateMooDb();
 
+        // Act
         var result = await db.Sql.QueryMultipleAsync(
             """
             SELECT COUNT(*) FROM [dbo].[tbl_User] WHERE [UserId] = 1;
@@ -52,6 +54,7 @@ public sealed class SqlQueryMultipleAsyncTests
                 OrderNumbers = read.List(static reader => reader.GetString(0))
             });
 
+        // Assert
         Assert.Equal(1, result.UserCount);
         Assert.NotNull(result.User);
         Assert.Equal(1, result.User!.UserId);
