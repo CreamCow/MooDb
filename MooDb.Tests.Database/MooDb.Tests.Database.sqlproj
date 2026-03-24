@@ -62,11 +62,11 @@
     <Build Include="tbl_Order.sql" />
     <Build Include="Tests.sql" />
     <Build Include="usp_ResetDatabase.sql" />
-    <Build Include="usp_Users_Insert.sql" />
-    <Build Include="usp_Users_GetById.sql" />
-    <Build Include="usp_Users_List.sql" />
-    <Build Include="usp_Users_Count.sql" />
-    <Build Include="usp_Users_UpdateDisplayName.sql" />
+    <Build Include="usp_User_Insert.sql" />
+    <Build Include="usp_User_GetById.sql" />
+    <Build Include="usp_User_List.sql" />
+    <Build Include="usp_User_Count.sql" />
+    <Build Include="usp_User_UpdateDisplayName.sql" />
     <Build Include="usp_Test_QueryMultiple_UserAndOrders.sql" />
     <Build Include="usp_OutputParameters.sql" />
     <Build Include="usp_QueryMultiple_UserAndOrders.sql" />

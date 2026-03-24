@@ -1,4 +1,5 @@
-﻿using MooDb.Tests.Integration.Infrastructure.Fixtures;
+﻿using Microsoft.Data.SqlClient;
+using MooDb.Tests.Integration.Infrastructure.Fixtures;
 
 namespace MooDb.Tests.Integration.Tests.Smoke;
 
@@ -17,7 +18,31 @@ public sealed class ExecuteAsyncTests
     {
         await _fixture.ResetAsync();
 
-        throw new NotImplementedException();
+        var db = _fixture.CreateMooDb();
+
+        var createdUtc = new DateTime(2024, 01, 02, 03, 04, 05, DateTimeKind.Unspecified);
+
+        var parameters = new MooParams()
+            .AddNVarChar("@Email", "ada.lovelace@example.com", 320)
+            .AddNVarChar("@DisplayName", "Ada Lovelace", 200)
+            .AddInt("@Age", 36)
+            .AddBit("@IsActive", true)
+            .AddDateTime2("@CreatedUtc", createdUtc)
+            .AddDateTime2("@UpdatedUtc", null);
+
+        var affectedRows = await db.ExecuteAsync("dbo.usp_User_Insert", parameters);
+
+        Assert.Equal(1, affectedRows);
+
+        var userCount = await _fixture.ScalarSqlAsync<int>(
+            "SELECT COUNT(*) FROM [dbo].[tbl_User];");
+
+        Assert.Equal(1, userCount);
+
+        var displayName = await _fixture.ScalarSqlAsync<string>(
+            "SELECT TOP (1) [DisplayName] FROM [dbo].[tbl_User];");
+
+        Assert.Equal("Ada Lovelace", displayName);
     }
 
     [Fact]
@@ -25,6 +50,78 @@ public sealed class ExecuteAsyncTests
     {
         await _fixture.ResetAsync();
 
-        throw new NotImplementedException();
+        var createdUtc = new DateTime(2024, 01, 02, 03, 04, 05, DateTimeKind.Unspecified);
+        var updatedUtc = new DateTime(2024, 02, 03, 04, 05, 06, DateTimeKind.Unspecified);
+
+        await _fixture.ExecuteSqlAsync(
+            """
+            INSERT INTO [dbo].[tbl_User]
+            (
+                [Email],
+                [DisplayName],
+                [Age],
+                [IsActive],
+                [CreatedUtc],
+                [UpdatedUtc]
+            )
+            VALUES
+            (
+                @Email,
+                @DisplayName,
+                @Age,
+                @IsActive,
+                @CreatedUtc,
+                @UpdatedUtc
+            );
+            """,
+            new[]
+            {
+                new SqlParameter("@Email", "grace.hopper@example.com"),
+                new SqlParameter("@DisplayName", "Grace Hopper"),
+                new SqlParameter("@Age", 85),
+                new SqlParameter("@IsActive", true),
+                new SqlParameter("@CreatedUtc", createdUtc),
+                new SqlParameter("@UpdatedUtc", DBNull.Value)
+            });
+
+        var userId = await _fixture.ScalarSqlAsync<int>(
+            "SELECT TOP (1) [UserId] FROM [dbo].[tbl_User];");
+
+        var db = _fixture.CreateMooDb();
+
+        var parameters = new MooParams()
+            .AddInt("@UserId", userId)
+            .AddNVarChar("@DisplayName", "Rear Admiral Grace Hopper", 200)
+            .AddDateTime2("@UpdatedUtc", updatedUtc);
+
+        var affectedRows = await db.ExecuteAsync("dbo.usp_User_UpdateDisplayName", parameters);
+
+        Assert.Equal(1, affectedRows);
+
+        var displayName = await _fixture.ScalarSqlAsync<string>(
+            """
+            SELECT TOP (1) [DisplayName]
+            FROM [dbo].[tbl_User]
+            WHERE [UserId] = @UserId;
+            """,
+            new[]
+            {
+                new SqlParameter("@UserId", userId)
+            });
+
+        Assert.Equal("Rear Admiral Grace Hopper", displayName);
+
+        var persistedUpdatedUtc = await _fixture.ScalarSqlAsync<DateTime>(
+            """
+            SELECT TOP (1) [UpdatedUtc]
+            FROM [dbo].[tbl_User]
+            WHERE [UserId] = @UserId;
+            """,
+            new[]
+            {
+                new SqlParameter("@UserId", userId)
+            });
+
+        Assert.Equal(updatedUtc, persistedUpdatedUtc);
     }
 }

@@ -1,4 +1,4 @@
-﻿CREATE PROCEDURE [dbo].[usp_Users_List]
+﻿CREATE PROCEDURE [dbo].[usp_User_List]
 AS
 BEGIN
     SET NOCOUNT ON;

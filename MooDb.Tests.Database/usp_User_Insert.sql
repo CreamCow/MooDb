@@ -1,4 +1,4 @@
-﻿CREATE PROCEDURE [dbo].[usp_Users_Insert]
+﻿CREATE PROCEDURE [dbo].[usp_User_Insert]
     @Email NVARCHAR(320),
     @DisplayName NVARCHAR(200),
     @Age INT = NULL,
@@ -7,7 +7,6 @@
     @UpdatedUtc DATETIME2(7) = NULL
 AS
 BEGIN
-    SET NOCOUNT ON;
 
     INSERT INTO [dbo].[tbl_User]
     (
