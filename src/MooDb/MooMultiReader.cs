@@ -44,7 +44,7 @@ internal sealed class MooMultiReader : IMooMultiReader
     public T Scalar<T>()
     {
         PrepareNextResult();
-        return MooScalarConverter.ConvertOrDefault<T>(ReadScalarValue());
+        return MooScalarConverter.ConvertScalarOrDefault<T>(ReadScalarValue());
     }
 
     private void PrepareNextResult()
@@ -53,7 +53,7 @@ internal sealed class MooMultiReader : IMooMultiReader
         {
             if (!_reader.NextResult())
             {
-                throw new InvalidOperationException("No more result sets are available.");
+                throw new InvalidOperationException(MooErrorMessages.NoMoreResultSetsAvailable);
             }
 
             return;
@@ -73,7 +73,7 @@ internal sealed class MooMultiReader : IMooMultiReader
 
         if (_reader.Read())
         {
-            throw new InvalidOperationException("Expected at most one row but received more than one.");
+            throw new InvalidOperationException(MooErrorMessages.ExpectedSingleRow);
         }
 
         return value;

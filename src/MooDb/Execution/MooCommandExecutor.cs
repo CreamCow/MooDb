@@ -62,7 +62,7 @@ internal sealed class MooCommandExecutor
         CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(context);
-        ArgumentException.ThrowIfNullOrWhiteSpace(commandText);
+        MooGuard.AgainstNullOrWhiteSpace(commandText, nameof(commandText), "Command text");
         ArgumentNullException.ThrowIfNull(execute);
 
         var connection = context.Connection;
@@ -167,7 +167,7 @@ internal sealed class MooCommandExecutor
     /// </para>
     /// <para>
     /// All relevant metadata is preserved, including type information, size, precision, scale,
-    /// direction, and structured parameter settings such as table-valued parameter type names.
+    /// direction, and table-valued parameter metadata such as SQL Server type names.
     /// </para>
     /// </remarks>
     private static SqlParameter CloneParameter(SqlParameter source)

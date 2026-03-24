@@ -124,7 +124,7 @@ internal sealed class MooMapper
 
         if (reader.Read())
         {
-            throw new InvalidOperationException("Expected at most one row but received more than one.");
+            throw new InvalidOperationException(MooErrorMessages.ExpectedSingleRow);
         }
 
         return instance;
@@ -144,7 +144,7 @@ internal sealed class MooMapper
 
         if (await reader.ReadAsync(cancellationToken))
         {
-            throw new InvalidOperationException("Expected at most one row but received more than one.");
+            throw new InvalidOperationException(MooErrorMessages.ExpectedSingleRow);
         }
 
         return instance;

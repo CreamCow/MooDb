@@ -15,7 +15,7 @@ namespace MooDb;
 /// but all commands execute on the same connection and within the same SQL Server transaction.
 /// </para>
 /// <para>
-/// Use <see cref="MooDb.BeginTransactionAsync(CancellationToken)"/> to create an instance.
+/// Use <see cref="global::MooDb.MooDb.BeginTransactionAsync"/> to create an instance.
 /// </para>
 /// <para>
 /// Changes are committed only when <see cref="CommitAsync(CancellationToken)"/> is called.
@@ -78,6 +78,8 @@ public sealed class MooTransaction : IAsyncDisposable
         int? commandTimeoutSeconds = null,
         CancellationToken cancellationToken = default)
     {
+        MooGuard.AgainstNullOrWhiteSpace(procedure, nameof(procedure), "Procedure name");
+
         var context = CreateExecutionContext();
 
         return _executor.ExecuteAsync(
@@ -111,6 +113,8 @@ public sealed class MooTransaction : IAsyncDisposable
         int? commandTimeoutSeconds = null,
         CancellationToken cancellationToken = default)
     {
+        MooGuard.AgainstNullOrWhiteSpace(procedure, nameof(procedure), "Procedure name");
+
         var context = CreateExecutionContext();
 
         return _executor.ExecuteAsync(
@@ -119,7 +123,7 @@ public sealed class MooTransaction : IAsyncDisposable
             CommandType.StoredProcedure,
             parameters,
             commandTimeoutSeconds,
-            async cmd => MooScalarConverter.ConvertOrDefault<T>(await cmd.ExecuteScalarAsync(cancellationToken)),
+            async cmd => MooScalarConverter.ConvertScalarOrDefault<T>(await cmd.ExecuteScalarAsync(cancellationToken)),
             cancellationToken);
     }
 
@@ -134,10 +138,10 @@ public sealed class MooTransaction : IAsyncDisposable
     /// Returns the mapped object if exactly one row is returned.
     /// </para>
     /// <para>
-    /// Throws an exception if more than one row is returned.
+    /// Throws an <see cref="InvalidOperationException"/> if more than one row is returned.
     /// </para>
     /// <para>
-    /// Mapping rules are the same as <see cref="ListAsync{T}"/>.
+    /// Mapping rules are the same as <see cref="ListAsync{T}(string, System.Func{Microsoft.Data.SqlClient.SqlDataReader, T}, System.Collections.Generic.IReadOnlyList{Microsoft.Data.SqlClient.SqlParameter}?, int?, System.Threading.CancellationToken)"/>.
     /// </para>
     /// </remarks>
     public Task<T?> SingleAsync<T>(
@@ -146,6 +150,8 @@ public sealed class MooTransaction : IAsyncDisposable
         int? commandTimeoutSeconds = null,
         CancellationToken cancellationToken = default)
     {
+        MooGuard.AgainstNullOrWhiteSpace(procedure, nameof(procedure), "Procedure name");
+
         var context = CreateExecutionContext();
 
         return _executor.ExecuteAsync(
@@ -187,6 +193,7 @@ public sealed class MooTransaction : IAsyncDisposable
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(map);
+        MooGuard.AgainstNullOrWhiteSpace(procedure, nameof(procedure), "Procedure name");
 
         var context = CreateExecutionContext();
 
@@ -228,6 +235,8 @@ public sealed class MooTransaction : IAsyncDisposable
         int? commandTimeoutSeconds = null,
         CancellationToken cancellationToken = default)
     {
+        MooGuard.AgainstNullOrWhiteSpace(procedure, nameof(procedure), "Procedure name");
+
         var context = CreateExecutionContext();
 
         return _executor.ExecuteAsync(
@@ -263,6 +272,7 @@ public sealed class MooTransaction : IAsyncDisposable
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(map);
+        MooGuard.AgainstNullOrWhiteSpace(procedure, nameof(procedure), "Procedure name");
 
         var context = CreateExecutionContext();
 
@@ -311,6 +321,7 @@ public sealed class MooTransaction : IAsyncDisposable
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(read);
+        MooGuard.AgainstNullOrWhiteSpace(procedure, nameof(procedure), "Procedure name");
 
         var context = CreateExecutionContext();
 
@@ -395,7 +406,6 @@ public sealed class MooTransaction : IAsyncDisposable
 
     private void ThrowIfDisposed()
     {
-        if (_disposed)
-            throw new ObjectDisposedException(nameof(MooTransaction));
+        ObjectDisposedException.ThrowIf(_disposed, this);
     }
 }

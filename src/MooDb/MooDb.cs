@@ -19,7 +19,7 @@ namespace MooDb
     /// The API supports:
     /// - non-query execution (<see cref="ExecuteAsync"/>)
     /// - scalar values (<see cref="ScalarAsync{T}"/>)
-    /// - result set mapping (<see cref="ListAsync{T}"/> and <see cref="SingleAsync{T}"/>)
+    /// - result set mapping (<see cref="ListAsync{T}(string, System.Collections.Generic.IReadOnlyList{Microsoft.Data.SqlClient.SqlParameter}?, int?, System.Threading.CancellationToken)"/> and <see cref="SingleAsync{T}(string, System.Collections.Generic.IReadOnlyList{Microsoft.Data.SqlClient.SqlParameter}?, int?, System.Threading.CancellationToken)"/>)
     /// </para>
     /// <para>
     /// Auto-mapping supports both:
@@ -66,7 +66,8 @@ namespace MooDb
         /// <param name="options">Optional MooDb configuration settings.</param>
         public MooDb(string connectionString, MooDbOptions? options = null)
         {
-            _connectionString = connectionString ?? throw new ArgumentNullException(nameof(connectionString));
+            MooGuard.AgainstNullOrWhiteSpace(connectionString, nameof(connectionString), "Connection string");
+            _connectionString = connectionString;
             _connection = null;
 
             var opts = options ?? new MooDbOptions();
@@ -114,6 +115,8 @@ namespace MooDb
             int? commandTimeoutSeconds = null,
             CancellationToken cancellationToken = default)
         {
+            MooGuard.AgainstNullOrWhiteSpace(procedure, nameof(procedure), "Procedure name");
+
             var context = CreateExecutionContext();
 
             return _executor.ExecuteAsync(
@@ -147,6 +150,8 @@ namespace MooDb
             int? commandTimeoutSeconds = null,
             CancellationToken cancellationToken = default)
         {
+            MooGuard.AgainstNullOrWhiteSpace(procedure, nameof(procedure), "Procedure name");
+
             var context = CreateExecutionContext();
 
             return _executor.ExecuteAsync(
@@ -155,7 +160,7 @@ namespace MooDb
                 CommandType.StoredProcedure,
                 parameters,
                 commandTimeoutSeconds,
-                async cmd => MooScalarConverter.ConvertOrDefault<T>(await cmd.ExecuteScalarAsync(cancellationToken)),
+                async cmd => MooScalarConverter.ConvertScalarOrDefault<T>(await cmd.ExecuteScalarAsync(cancellationToken)),
                 cancellationToken);
         }
 
@@ -173,7 +178,7 @@ namespace MooDb
         /// Throws an <see cref="InvalidOperationException"/> if more than one row is returned.
         /// </para>
         /// <para>
-        /// Mapping rules are the same as <see cref="ListAsync{T}"/>.
+        /// Mapping rules are the same as <see cref="ListAsync{T}(string, System.Func{Microsoft.Data.SqlClient.SqlDataReader, T}, System.Collections.Generic.IReadOnlyList{Microsoft.Data.SqlClient.SqlParameter}?, int?, System.Threading.CancellationToken)"/>.
         /// </para>
         /// </remarks>
         public Task<T?> SingleAsync<T>(
@@ -182,6 +187,8 @@ namespace MooDb
             int? commandTimeoutSeconds = null,
             CancellationToken cancellationToken = default)
         {
+            MooGuard.AgainstNullOrWhiteSpace(procedure, nameof(procedure), "Procedure name");
+
             var context = CreateExecutionContext();
 
             return _executor.ExecuteAsync(
@@ -226,6 +233,7 @@ namespace MooDb
             CancellationToken cancellationToken = default)
         {
             ArgumentNullException.ThrowIfNull(map);
+            MooGuard.AgainstNullOrWhiteSpace(procedure, nameof(procedure), "Procedure name");
 
             var context = CreateExecutionContext();
 
@@ -269,6 +277,8 @@ namespace MooDb
             int? commandTimeoutSeconds = null,
             CancellationToken cancellationToken = default)
         {
+            MooGuard.AgainstNullOrWhiteSpace(procedure, nameof(procedure), "Procedure name");
+
             var context = CreateExecutionContext();
 
             return _executor.ExecuteAsync(
@@ -307,6 +317,7 @@ namespace MooDb
             CancellationToken cancellationToken = default)
         {
             ArgumentNullException.ThrowIfNull(map);
+            MooGuard.AgainstNullOrWhiteSpace(procedure, nameof(procedure), "Procedure name");
 
             var context = CreateExecutionContext();
 
