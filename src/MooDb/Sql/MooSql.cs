@@ -10,7 +10,7 @@ namespace MooDb.Sql;
 /// </summary>
 /// <remarks>
 /// <para>
-/// <see cref="MooSql"/> mirrors the core query surface of <see cref="MooDb.MooDb"/>, but executes SQL text instead of stored procedures.
+/// <see cref="MooSql"/> mirrors the core query surface of <see cref="global::MooDb.MooDb"/>, but executes SQL text instead of stored procedures.
 /// </para>
 /// <para>
 /// MooDb is designed around a stored procedure-first model. This type exists as an explicit SQL text escape hatch.
@@ -61,6 +61,8 @@ public sealed class MooSql
         int? commandTimeoutSeconds = null,
         CancellationToken cancellationToken = default)
     {
+        MooGuard.AgainstNullOrWhiteSpace(sql, nameof(sql), "SQL text");
+
         var context = _contextFactory();
 
         return _executor.ExecuteAsync(
@@ -94,6 +96,8 @@ public sealed class MooSql
         int? commandTimeoutSeconds = null,
         CancellationToken cancellationToken = default)
     {
+        MooGuard.AgainstNullOrWhiteSpace(sql, nameof(sql), "SQL text");
+
         var context = _contextFactory();
 
         return _executor.ExecuteAsync(
@@ -102,7 +106,7 @@ public sealed class MooSql
             CommandType.Text,
             parameters,
             commandTimeoutSeconds,
-            async cmd => MooScalarConverter.ConvertOrDefault<T>(await cmd.ExecuteScalarAsync(cancellationToken)),
+            async cmd => MooScalarConverter.ConvertScalarOrDefault<T>(await cmd.ExecuteScalarAsync(cancellationToken)),
             cancellationToken);
     }
 
@@ -120,10 +124,10 @@ public sealed class MooSql
     /// Returns the mapped object if exactly one row is returned.
     /// </para>
     /// <para>
-    /// Throws an exception if more than one row is returned.
+    /// Throws an <see cref="InvalidOperationException"/> if more than one row is returned.
     /// </para>
     /// <para>
-    /// Mapping rules are the same as <see cref="ListAsync{T}"/>.
+    /// Mapping rules are the same as <see cref="ListAsync{T}(string, System.Func{Microsoft.Data.SqlClient.SqlDataReader, T}, System.Collections.Generic.IReadOnlyList{Microsoft.Data.SqlClient.SqlParameter}?, int?, System.Threading.CancellationToken)"/>.
     /// </para>
     /// <para>
     /// MooDb is designed for stored procedure usage. This method provides a SQL text
@@ -136,6 +140,8 @@ public sealed class MooSql
         int? commandTimeoutSeconds = null,
         CancellationToken cancellationToken = default)
     {
+        MooGuard.AgainstNullOrWhiteSpace(sql, nameof(sql), "SQL text");
+
         var context = _contextFactory();
 
         return _executor.ExecuteAsync(
@@ -180,6 +186,7 @@ public sealed class MooSql
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(map);
+        MooGuard.AgainstNullOrWhiteSpace(sql, nameof(sql), "SQL text");
 
         var context = _contextFactory();
 
@@ -228,6 +235,8 @@ public sealed class MooSql
         int? commandTimeoutSeconds = null,
         CancellationToken cancellationToken = default)
     {
+        MooGuard.AgainstNullOrWhiteSpace(sql, nameof(sql), "SQL text");
+
         var context = _contextFactory();
 
         return _executor.ExecuteAsync(
@@ -266,6 +275,7 @@ public sealed class MooSql
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(map);
+        MooGuard.AgainstNullOrWhiteSpace(sql, nameof(sql), "SQL text");
 
         var context = _contextFactory();
 
@@ -314,6 +324,7 @@ public sealed class MooSql
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(read);
+        MooGuard.AgainstNullOrWhiteSpace(sql, nameof(sql), "SQL text");
 
         var context = _contextFactory();
 

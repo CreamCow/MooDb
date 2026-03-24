@@ -569,7 +569,7 @@ public sealed class MooParams : IReadOnlyList<SqlParameter>
     {
         ValidateName(name);
         ArgumentNullException.ThrowIfNull(value);
-        ArgumentException.ThrowIfNullOrWhiteSpace(typeName);
+        MooGuard.AgainstNullOrWhiteSpace(typeName, nameof(typeName), "Table-valued parameter type name");
 
         var parameter = new SqlParameter(name, SqlDbType.Structured)
         {
@@ -584,7 +584,7 @@ public sealed class MooParams : IReadOnlyList<SqlParameter>
 
 
     /// <summary>
-    /// Adds a structured table-valued parameter to the collection.
+    /// Adds a table-valued parameter to the collection using the legacy compatibility alias.
     /// </summary>
     /// <remarks>
     /// <para>
@@ -943,8 +943,7 @@ public sealed class MooParams : IReadOnlyList<SqlParameter>
 
         if (value is null)
         {
-            throw new InvalidOperationException(
-                $"Parameter '{name}' does not contain a value.");
+            throw new InvalidOperationException(MooErrorMessages.ParameterHasNoValue(name));
         }
 
         return value;
@@ -1120,8 +1119,7 @@ public sealed class MooParams : IReadOnlyList<SqlParameter>
     {
         if (_lookup.ContainsKey(parameter.ParameterName))
         {
-            throw new InvalidOperationException(
-                $"A parameter named '{parameter.ParameterName}' has already been added.");
+            throw new InvalidOperationException(MooErrorMessages.DuplicateParameter(parameter.ParameterName));
         }
 
         _parameters.Add(parameter);
@@ -1134,15 +1132,13 @@ public sealed class MooParams : IReadOnlyList<SqlParameter>
 
         if (value is null)
         {
-            throw new InvalidOperationException(
-                $"Parameter '{name}' does not contain a value.");
+            throw new InvalidOperationException(MooErrorMessages.ParameterHasNoValue(name));
         }
 
         if (value is T typed)
             return typed;
 
-        throw new InvalidOperationException(
-            $"Parameter '{name}' contains a value of type '{value.GetType().Name}', which cannot be read as '{typeof(T).Name}'.");
+        throw new InvalidOperationException(MooErrorMessages.ParameterTypeMismatch(name, value.GetType().Name, typeof(T).Name));
     }
 
     private T? GetNullableStruct<T>(string name) where T : struct
@@ -1155,8 +1151,7 @@ public sealed class MooParams : IReadOnlyList<SqlParameter>
         if (value is T typed)
             return typed;
 
-        throw new InvalidOperationException(
-            $"Parameter '{name}' contains a value of type '{value.GetType().Name}', which cannot be read as '{typeof(T).Name}'.");
+        throw new InvalidOperationException(MooErrorMessages.ParameterTypeMismatch(name, value.GetType().Name, typeof(T).Name));
     }
 
     private T GetRequiredReference<T>(string name) where T : class
@@ -1165,15 +1160,13 @@ public sealed class MooParams : IReadOnlyList<SqlParameter>
 
         if (value is null)
         {
-            throw new InvalidOperationException(
-                $"Parameter '{name}' does not contain a value.");
+            throw new InvalidOperationException(MooErrorMessages.ParameterHasNoValue(name));
         }
 
         if (value is T typed)
             return typed;
 
-        throw new InvalidOperationException(
-            $"Parameter '{name}' contains a value of type '{value.GetType().Name}', which cannot be read as '{typeof(T).Name}'.");
+        throw new InvalidOperationException(MooErrorMessages.ParameterTypeMismatch(name, value.GetType().Name, typeof(T).Name));
     }
 
     private T? GetNullableReference<T>(string name) where T : class
@@ -1186,8 +1179,7 @@ public sealed class MooParams : IReadOnlyList<SqlParameter>
         if (value is T typed)
             return typed;
 
-        throw new InvalidOperationException(
-            $"Parameter '{name}' contains a value of type '{value.GetType().Name}', which cannot be read as '{typeof(T).Name}'.");
+        throw new InvalidOperationException(MooErrorMessages.ParameterTypeMismatch(name, value.GetType().Name, typeof(T).Name));
     }
 
     private object? GetRawValue(string name)
@@ -1196,8 +1188,7 @@ public sealed class MooParams : IReadOnlyList<SqlParameter>
 
         if (!_lookup.TryGetValue(name, out var parameter))
         {
-            throw new InvalidOperationException(
-                $"No parameter named '{name}' exists in this collection.");
+            throw new InvalidOperationException(MooErrorMessages.ParameterNotFound(name));
         }
 
         return parameter.Value is DBNull ? null : parameter.Value;
@@ -1205,7 +1196,7 @@ public sealed class MooParams : IReadOnlyList<SqlParameter>
 
     private static void ValidateName(string name)
     {
-        ArgumentException.ThrowIfNullOrWhiteSpace(name);
+        MooGuard.AgainstNullOrWhiteSpace(name, nameof(name), "Parameter name");
     }
 
     private static void ValidateScale(byte scale)

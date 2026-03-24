@@ -5,9 +5,9 @@ namespace MooDb.Tests.Unit.Construction;
 public sealed class MooDbConstructionTests
 {
     [Fact]
-    public void Constructor_WhenConnectionStringIsNull_ThrowsArgumentNullException()
+    public void Constructor_WhenConnectionStringIsNull_ThrowsArgumentException()
     {
-        Assert.Throws<ArgumentNullException>(() => new MooDb((string)null!));
+        Assert.Throws<ArgumentException>(() => new MooDb((string)null!));
     }
 
     [Fact]

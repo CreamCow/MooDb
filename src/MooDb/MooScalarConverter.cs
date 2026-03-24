@@ -2,7 +2,7 @@ namespace MooDb;
 
 internal static class MooScalarConverter
 {
-    internal static T ConvertOrDefault<T>(object? value)
+    internal static T ConvertScalarOrDefault<T>(object? value)
     {
         if (value is null || value is DBNull)
         {
