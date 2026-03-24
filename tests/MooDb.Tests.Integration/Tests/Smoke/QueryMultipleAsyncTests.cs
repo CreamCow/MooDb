@@ -80,8 +80,7 @@ public sealed class QueryMultipleAsyncTests
 
             SET IDENTITY_INSERT [dbo].[tbl_Order] OFF;
             """,
-            new[]
-            {
+            [
                 new SqlParameter("@UserId", userId),
                 new SqlParameter("@Email", "ada.lovelace@example.com"),
                 new SqlParameter("@DisplayName", "Ada Lovelace"),
@@ -99,7 +98,7 @@ public sealed class QueryMultipleAsyncTests
                 new SqlParameter("@OrderNumber2", "ORD-001"),
                 new SqlParameter("@Total2", 10.25m),
                 new SqlParameter("@OrderCreatedUtc2", firstOrderCreatedUtc)
-            });
+            ]);
 
         var db = _fixture.CreateMooDb();
         var parameters = new MooParams().AddInt("@UserId", userId);
@@ -175,8 +174,7 @@ public sealed class QueryMultipleAsyncTests
 
             SET IDENTITY_INSERT [dbo].[tbl_User] OFF;
             """,
-            new[]
-            {
+            [
                 new SqlParameter("@UserId", userId),
                 new SqlParameter("@Email", "ada.lovelace@example.com"),
                 new SqlParameter("@DisplayName", "Ada Lovelace"),
@@ -184,7 +182,7 @@ public sealed class QueryMultipleAsyncTests
                 new SqlParameter("@IsActive", true),
                 new SqlParameter("@CreatedUtc", new DateTime(2024, 01, 02, 03, 04, 05)),
                 new SqlParameter("@UpdatedUtc", DBNull.Value)
-            });
+            ]);
 
         var db = _fixture.CreateMooDb();
         var parameters = new MooParams().AddInt("@UserId", userId);

@@ -63,8 +63,7 @@ public sealed class ScalarAsyncTests
                 @UpdatedUtc2
             );
             """,
-            new[]
-            {
+            [
                 new SqlParameter("@Email1", "ada.lovelace@example.com"),
                 new SqlParameter("@DisplayName1", "Ada Lovelace"),
                 new SqlParameter("@Age1", 36),
@@ -78,7 +77,7 @@ public sealed class ScalarAsyncTests
                 new SqlParameter("@IsActive2", true),
                 new SqlParameter("@CreatedUtc2", new DateTime(2024, 02, 03, 04, 05, 06)),
                 new SqlParameter("@UpdatedUtc2", DBNull.Value)
-            });
+            ]);
 
         var db = _fixture.CreateMooDb();
 
