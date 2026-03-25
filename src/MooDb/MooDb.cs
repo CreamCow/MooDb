@@ -1,4 +1,5 @@
 ﻿using Microsoft.Data.SqlClient;
+using MooDb.Bulk;
 using MooDb.Execution;
 using MooDb.Mapping;
 using MooDb.Sql;
@@ -57,6 +58,13 @@ namespace MooDb
         /// </remarks>
         public MooSql Sql { get; }
 
+        /// <summary>
+        /// Provides access to bulk insert operations outside a transaction.
+        /// </summary>
+        /// <remarks>
+        /// Use this property when you want to copy many rows directly into a SQL Server table.
+        /// </remarks>
+        public MooBulk Bulk { get; }
 
         // Constructors
         /// <summary>
@@ -74,6 +82,7 @@ namespace MooDb
             _executor = new MooCommandExecutor(opts.CommandTimeoutSeconds);
             _mapper = new MooMapper(opts.StrictAutoMapping);
             Sql = new MooSql(_executor, _mapper, CreateExecutionContext);
+            Bulk = new MooBulk(CreateExecutionContext);
         }
 
         /// <summary>
@@ -90,6 +99,7 @@ namespace MooDb
             _executor = new MooCommandExecutor(opts.CommandTimeoutSeconds);
             _mapper = new MooMapper(opts.StrictAutoMapping);
             Sql = new MooSql(_executor, _mapper, CreateExecutionContext);
+            Bulk = new MooBulk(CreateExecutionContext);
         }
 
 

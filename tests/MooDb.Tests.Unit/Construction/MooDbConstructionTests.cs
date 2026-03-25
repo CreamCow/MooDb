@@ -38,6 +38,7 @@ public sealed class MooDbConstructionTests
 
         // Assert
         Assert.NotNull(db.Sql);
+        Assert.NotNull(db.Bulk);
     }
 
     [Fact]
@@ -51,5 +52,6 @@ public sealed class MooDbConstructionTests
 
         // Assert
         Assert.NotNull(db.Sql);
+        Assert.NotNull(db.Bulk);
     }
 }
