@@ -1,5 +1,6 @@
 ﻿using System.Data;
 using Microsoft.Data.SqlClient;
+using MooDb.Bulk;
 using MooDb.Execution;
 using MooDb.Mapping;
 using MooDb.Sql;
@@ -55,6 +56,7 @@ public sealed class MooTransaction : IAsyncDisposable
         _ownsConnection = ownsConnection;
 
         Sql = new MooSql(_executor, _mapper, CreateExecutionContext);
+        Bulk = new MooBulk(CreateExecutionContext);
     }
 
 
@@ -64,6 +66,14 @@ public sealed class MooTransaction : IAsyncDisposable
     /// </summary>
     public MooSql Sql { get; }
 
+    /// <summary>
+    /// Provides access to bulk insert operations within the current transaction.
+    /// </summary>
+    /// <remarks>
+    /// Use this property when you want to copy many rows directly into a SQL Server table
+    /// as part of the current transaction.
+    /// </remarks>
+    public MooBulk Bulk { get; }
     /// <summary>
     /// Executes a stored procedure that does not return result sets within the current transaction.
     /// </summary>
@@ -75,6 +85,7 @@ public sealed class MooTransaction : IAsyncDisposable
     /// The return value represents the number of rows affected, as reported by SQL Server.
     /// </para>
     /// </remarks>
+    
     public Task<int> ExecuteAsync(
         string procedure,
         IReadOnlyList<SqlParameter>? parameters = null,
