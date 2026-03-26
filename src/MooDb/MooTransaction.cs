@@ -92,7 +92,7 @@ public sealed class MooTransaction : IAsyncDisposable
         int? commandTimeoutSeconds = null,
         CancellationToken cancellationToken = default)
     {
-        ThrowIfDisposed();
+        ThrowIfCompleted();
         MooGuard.AgainstNullOrWhiteSpace(procedure, nameof(procedure), "Procedure name");
 
         var context = CreateExecutionContext();
@@ -128,7 +128,7 @@ public sealed class MooTransaction : IAsyncDisposable
         int? commandTimeoutSeconds = null,
         CancellationToken cancellationToken = default)
     {
-        ThrowIfDisposed();
+        ThrowIfCompleted();
         MooGuard.AgainstNullOrWhiteSpace(procedure, nameof(procedure), "Procedure name");
 
         var context = CreateExecutionContext();
@@ -166,7 +166,7 @@ public sealed class MooTransaction : IAsyncDisposable
         int? commandTimeoutSeconds = null,
         CancellationToken cancellationToken = default)
     {
-        ThrowIfDisposed();
+        ThrowIfCompleted();
         MooGuard.AgainstNullOrWhiteSpace(procedure, nameof(procedure), "Procedure name");
 
         var context = CreateExecutionContext();
@@ -209,7 +209,7 @@ public sealed class MooTransaction : IAsyncDisposable
         int? commandTimeoutSeconds = null,
         CancellationToken cancellationToken = default)
     {
-        ThrowIfDisposed();
+        ThrowIfCompleted();
         ArgumentNullException.ThrowIfNull(map);
         MooGuard.AgainstNullOrWhiteSpace(procedure, nameof(procedure), "Procedure name");
 
@@ -253,7 +253,7 @@ public sealed class MooTransaction : IAsyncDisposable
         int? commandTimeoutSeconds = null,
         CancellationToken cancellationToken = default)
     {
-        ThrowIfDisposed();
+        ThrowIfCompleted();
         MooGuard.AgainstNullOrWhiteSpace(procedure, nameof(procedure), "Procedure name");
 
         var context = CreateExecutionContext();
@@ -290,7 +290,7 @@ public sealed class MooTransaction : IAsyncDisposable
         int? commandTimeoutSeconds = null,
         CancellationToken cancellationToken = default)
     {
-        ThrowIfDisposed();
+        ThrowIfCompleted();
         ArgumentNullException.ThrowIfNull(map);
         MooGuard.AgainstNullOrWhiteSpace(procedure, nameof(procedure), "Procedure name");
 
@@ -340,7 +340,7 @@ public sealed class MooTransaction : IAsyncDisposable
         int? commandTimeoutSeconds = null,
         CancellationToken cancellationToken = default)
     {
-        ThrowIfDisposed();
+        ThrowIfCompleted();
         ArgumentNullException.ThrowIfNull(read);
         MooGuard.AgainstNullOrWhiteSpace(procedure, nameof(procedure), "Procedure name");
 
@@ -374,7 +374,7 @@ public sealed class MooTransaction : IAsyncDisposable
     /// </remarks>
     public async Task CommitAsync(CancellationToken cancellationToken = default)
     {
-        ThrowIfDisposed();
+        ThrowIfCompleted();
 
         await _transaction.CommitAsync(cancellationToken);
         _committed = true;
@@ -420,8 +420,20 @@ public sealed class MooTransaction : IAsyncDisposable
     // Private helpers
     private MooExecutionContext CreateExecutionContext()
     {
-        ThrowIfDisposed();
+        ThrowIfCompleted();
         return new MooExecutionContext(_connection, _transaction, ownsConnection: false);
+    }
+
+
+    private void ThrowIfCompleted()
+    {
+        ThrowIfDisposed();
+
+        if (_committed)
+        {
+            throw new InvalidOperationException(
+                "This transaction has already been committed and can no longer be used.");
+        }
     }
 
     private void ThrowIfDisposed()

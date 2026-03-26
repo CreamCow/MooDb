@@ -4,23 +4,6 @@ internal static class MooScalarConverter
 {
     internal static T ConvertScalarOrDefault<T>(object? value)
     {
-        if (value is null || value is DBNull)
-        {
-            return default!;
-        }
-
-        return ConvertValue<T>(value);
-    }
-
-    private static T ConvertValue<T>(object value)
-    {
-        var targetType = Nullable.GetUnderlyingType(typeof(T)) ?? typeof(T);
-
-        if (targetType.IsInstanceOfType(value))
-        {
-            return (T)value;
-        }
-
-        return (T)Convert.ChangeType(value, targetType);
+        return MooValueConverter.ConvertOrDefault<T>(value);
     }
 }

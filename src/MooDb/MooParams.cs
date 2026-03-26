@@ -54,6 +54,7 @@ public sealed class MooParams : IReadOnlyList<SqlParameter>
     public MooParams Add(SqlParameter parameter)
     {
         ArgumentNullException.ThrowIfNull(parameter);
+        ValidateName(parameter.ParameterName);
         AddInternal(parameter);
         return this;
     }

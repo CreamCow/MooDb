@@ -173,35 +173,28 @@ internal sealed class MooMapper
     {
         var type = typeof(T);
         var columnLookup = CreateColumnLookup(reader);
+        var writableProperties = GetWritableProperties(type);
+        var ctorCandidate = FindBestConstructorCandidate<T>(reader);
 
-        var writableProperties = type
-            .GetProperties(BindingFlags.Public | BindingFlags.Instance)
-            .Where(p => p.CanWrite)
-            .ToArray();
-
-        var ctor = FindUsableConstructor<T>(reader);
-
-        if (ctor is not null)
+        if (ctorCandidate is not null)
         {
-            var ctorParameters = ctor.GetParameters();
-            var ctorParameterNames = new HashSet<string>(
-                ctorParameters.Select(p => p.Name!),
-                StringComparer.OrdinalIgnoreCase);
-
             if (_strictAutoMapping)
             {
                 ValidateStrictConstructorMapping(
                     type,
                     columnLookup,
                     writableProperties,
-                    ctorParameterNames);
+                    ctorCandidate.ParameterNames,
+                    reader);
             }
 
-            var create = CreateConstructorDelegate<T>(ctor, reader);
+            var create = CreateConstructorDelegate<T>(ctorCandidate.Constructor, reader);
             var propertyMappings = CreatePropertyMappings<T>(
                 writableProperties,
                 columnLookup,
-                skipPropertyNames: ctorParameterNames);
+                skipPropertyNames: ctorCandidate.ParameterNames,
+                validatePotentialConversions: _strictAutoMapping,
+                reader);
 
             if (propertyMappings.Count == 0)
             {
@@ -228,13 +221,15 @@ internal sealed class MooMapper
 
         if (_strictAutoMapping)
         {
-            ValidateStrictPropertyMapping(type, columnLookup, writableProperties);
+            ValidateStrictPropertyMapping(type, columnLookup, writableProperties, reader);
         }
 
         var mappings = CreatePropertyMappings<T>(
             writableProperties,
             columnLookup,
-            skipPropertyNames: null);
+            skipPropertyNames: null,
+            validatePotentialConversions: _strictAutoMapping,
+            reader);
 
         var createInstance = CreateDefaultConstructor<T>();
 
@@ -262,18 +257,30 @@ internal sealed class MooMapper
         return columnLookup;
     }
 
+    private static PropertyInfo[] GetWritableProperties(Type type)
+    {
+        return type
+            .GetProperties(BindingFlags.Public | BindingFlags.Instance)
+            .Where(p => p.GetIndexParameters().Length == 0)
+            .Where(p => p.SetMethod is not null && p.SetMethod.IsPublic)
+            .ToArray();
+    }
+
     private void ValidateStrictPropertyMapping(
         Type type,
         Dictionary<string, int> columnLookup,
-        PropertyInfo[] writableProperties)
+        PropertyInfo[] writableProperties,
+        SqlDataReader reader)
     {
         foreach (var property in writableProperties)
         {
-            if (!columnLookup.ContainsKey(property.Name))
+            if (!columnLookup.TryGetValue(property.Name, out var ordinal))
             {
                 throw new InvalidOperationException(
                     $"No matching column found for property '{property.Name}' on type '{type.Name}'.");
             }
+
+            ValidatePotentialConversion(type, property.Name, reader.GetFieldType(ordinal), property.PropertyType);
         }
 
         foreach (var column in columnLookup.Keys)
@@ -290,14 +297,20 @@ internal sealed class MooMapper
         Type type,
         Dictionary<string, int> columnLookup,
         PropertyInfo[] writableProperties,
-        HashSet<string> ctorParameterNames)
+        HashSet<string> ctorParameterNames,
+        SqlDataReader reader)
     {
         foreach (var property in writableProperties)
         {
-            if (!ctorParameterNames.Contains(property.Name) && !columnLookup.ContainsKey(property.Name))
+            if (!ctorParameterNames.Contains(property.Name) && !columnLookup.TryGetValue(property.Name, out var ordinal))
             {
                 throw new InvalidOperationException(
                     $"No matching column or constructor parameter found for property '{property.Name}' on type '{type.Name}'.");
+            }
+
+            if (columnLookup.TryGetValue(property.Name, out ordinal) && !ctorParameterNames.Contains(property.Name))
+            {
+                ValidatePotentialConversion(type, property.Name, reader.GetFieldType(ordinal), property.PropertyType);
             }
         }
 
@@ -315,10 +328,21 @@ internal sealed class MooMapper
         }
     }
 
-    private static List<(int Ordinal, Action<T, object?> Setter)> CreatePropertyMappings<T>(
+    private void ValidatePotentialConversion(Type type, string memberName, Type sourceType, Type targetType)
+    {
+        if (!MooValueConverter.CanPotentiallyConvert(sourceType, targetType))
+        {
+            throw new InvalidOperationException(
+                $"Column value for member '{memberName}' on type '{type.Name}' cannot be assigned from source type '{sourceType.Name}' to target type '{targetType.Name}'.");
+        }
+    }
+
+    private List<(int Ordinal, Action<T, object?> Setter)> CreatePropertyMappings<T>(
         PropertyInfo[] writableProperties,
         Dictionary<string, int> columnLookup,
-        HashSet<string>? skipPropertyNames)
+        HashSet<string>? skipPropertyNames,
+        bool validatePotentialConversions,
+        SqlDataReader reader)
     {
         var mappings = new List<(int Ordinal, Action<T, object?> Setter)>();
 
@@ -329,6 +353,11 @@ internal sealed class MooMapper
 
             if (columnLookup.TryGetValue(property.Name, out var ordinal))
             {
+                if (validatePotentialConversions)
+                {
+                    ValidatePotentialConversion(typeof(T), property.Name, reader.GetFieldType(ordinal), property.PropertyType);
+                }
+
                 var setter = CreateSetter<T>(property);
                 mappings.Add((ordinal, setter));
             }
@@ -337,31 +366,86 @@ internal sealed class MooMapper
         return mappings;
     }
 
-    private ConstructorInfo? FindUsableConstructor<T>(SqlDataReader reader)
+    private ConstructorCandidate? FindBestConstructorCandidate<T>(SqlDataReader reader)
     {
         var type = typeof(T);
-
         var constructors = type.GetConstructors();
+        var columnLookup = CreateColumnLookup(reader);
+        ConstructorCandidate? bestCandidate = null;
 
-        var columnNames = new HashSet<string>(
-            Enumerable.Range(0, reader.FieldCount)
-                      .Select(reader.GetName),
-            StringComparer.OrdinalIgnoreCase);
-
-        foreach (var ctor in constructors.OrderByDescending(c => c.GetParameters().Length))
+        foreach (var ctor in constructors)
         {
             var parameters = ctor.GetParameters();
 
             if (parameters.Length == 0)
-                continue;
-
-            if (parameters.All(p => columnNames.Contains(p.Name!)))
             {
-                return ctor;
+                continue;
+            }
+
+            var score = 0;
+            var parameterNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            var isCandidate = true;
+
+            foreach (var parameter in parameters)
+            {
+                if (parameter.Name is null || !columnLookup.TryGetValue(parameter.Name, out var ordinal))
+                {
+                    isCandidate = false;
+                    break;
+                }
+
+                var fieldType = reader.GetFieldType(ordinal);
+
+                if (!MooValueConverter.CanPotentiallyConvert(fieldType, parameter.ParameterType))
+                {
+                    isCandidate = false;
+                    break;
+                }
+
+                parameterNames.Add(parameter.Name);
+                score += GetConstructorMatchScore(fieldType, parameter.ParameterType);
+            }
+
+            if (!isCandidate)
+            {
+                continue;
+            }
+
+            var candidate = new ConstructorCandidate(ctor, parameterNames, score);
+
+            if (bestCandidate is null
+                || candidate.Score > bestCandidate.Score
+                || (candidate.Score == bestCandidate.Score
+                    && candidate.Constructor.GetParameters().Length > bestCandidate.Constructor.GetParameters().Length))
+            {
+                bestCandidate = candidate;
             }
         }
 
-        return null;
+        return bestCandidate;
+    }
+
+    private static int GetConstructorMatchScore(Type sourceType, Type targetType)
+    {
+        var effectiveTargetType = Nullable.GetUnderlyingType(targetType) ?? targetType;
+        var effectiveSourceType = Nullable.GetUnderlyingType(sourceType) ?? sourceType;
+
+        if (effectiveTargetType == effectiveSourceType)
+        {
+            return 4;
+        }
+
+        if (effectiveTargetType.IsAssignableFrom(effectiveSourceType))
+        {
+            return 3;
+        }
+
+        if (effectiveTargetType.IsEnum && effectiveSourceType == typeof(string))
+        {
+            return 2;
+        }
+
+        return 1;
     }
 
     private Func<SqlDataReader, T> CreateConstructorDelegate<T>(
@@ -389,7 +473,7 @@ internal sealed class MooMapper
             {
                 var value = r.IsDBNull(ordinals[i]) ? null : r.GetValue(ordinals[i]);
 
-                args[i] = ConvertValue(value, parameters[i].ParameterType);
+                args[i] = MooValueConverter.ConvertValue(value, parameters[i].ParameterType);
             }
 
             return (T)ctor.Invoke(args);
@@ -412,8 +496,8 @@ internal sealed class MooMapper
 
         var convertedValue = Expression.Convert(
             Expression.Call(
-                typeof(MooMapper),
-                nameof(ConvertValue),
+                typeof(MooValueConverter),
+                nameof(MooValueConverter.ConvertValue),
                 null,
                 value,
                 Expression.Constant(property.PropertyType)
@@ -429,16 +513,8 @@ internal sealed class MooMapper
         return lambda.Compile();
     }
 
-    private static object? ConvertValue(object? value, Type targetType)
-    {
-        if (value is null)
-            return null;
-
-        var underlying = Nullable.GetUnderlyingType(targetType) ?? targetType;
-
-        if (underlying.IsInstanceOfType(value))
-            return value;
-
-        return Convert.ChangeType(value, underlying);
-    }
+    private sealed record ConstructorCandidate(
+        ConstructorInfo Constructor,
+        HashSet<string> ParameterNames,
+        int Score);
 }
