@@ -1,5 +1,4 @@
-﻿using System.Collections.Concurrent;
-using System.Linq.Expressions;
+﻿using System.Linq.Expressions;
 using System.Reflection;
 using Microsoft.Data.SqlClient;
 
@@ -173,65 +172,73 @@ internal sealed class MooMapper
     private MooMapPlan<T> BuildPlan<T>(SqlDataReader reader)
     {
         var type = typeof(T);
+        var columnLookup = CreateColumnLookup(reader);
+
+        var writableProperties = type
+            .GetProperties(BindingFlags.Public | BindingFlags.Instance)
+            .Where(p => p.CanWrite)
+            .ToArray();
 
         var ctor = FindUsableConstructor<T>(reader);
 
         if (ctor is not null)
         {
-            var create = CreateConstructorDelegate<T>(ctor, reader);
+            var ctorParameters = ctor.GetParameters();
+            var ctorParameterNames = new HashSet<string>(
+                ctorParameters.Select(p => p.Name!),
+                StringComparer.OrdinalIgnoreCase);
 
-            return new MooMapPlan<T>(create, assign: null);
+            if (_strictAutoMapping)
+            {
+                ValidateStrictConstructorMapping(
+                    type,
+                    columnLookup,
+                    writableProperties,
+                    ctorParameterNames);
+            }
+
+            var create = CreateConstructorDelegate<T>(ctor, reader);
+            var propertyMappings = CreatePropertyMappings<T>(
+                writableProperties,
+                columnLookup,
+                skipPropertyNames: ctorParameterNames);
+
+            if (propertyMappings.Count == 0)
+            {
+                return new MooMapPlan<T>(create, assign: null);
+            }
+
+            void Assign(T instance, SqlDataReader r)
+            {
+                foreach (var (ordinal, setter) in propertyMappings)
+                {
+                    var value = r.IsDBNull(ordinal) ? null : r.GetValue(ordinal);
+                    setter(instance, value);
+                }
+            }
+
+            return new MooMapPlan<T>(create, Assign);
         }
 
-        var properties = type
-            .GetProperties(BindingFlags.Public | BindingFlags.Instance)
-            .Where(p => p.CanWrite)
-            .ToArray();
-
-        if (properties.Length == 0)
+        if (writableProperties.Length == 0)
         {
             throw new InvalidOperationException(
                 $"Type '{type.Name}' must have either a matching constructor or writable properties for auto-mapping.");
         }
 
-        var columnLookup = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
-
-        for (int i = 0; i < reader.FieldCount; i++)
-        {
-            columnLookup[reader.GetName(i)] = i;
-        }
-
-        var mappings = new List<(int Ordinal, Action<T, object?> Setter)>();
-
-        foreach (var property in properties)
-        {
-            if (columnLookup.TryGetValue(property.Name, out var ordinal))
-            {
-                var setter = CreateSetter<T>(property);
-                mappings.Add((ordinal, setter));
-            }
-            else if (_strictAutoMapping)
-            {
-                throw new InvalidOperationException(
-                    $"No matching column found for property '{property.Name}' on type '{type.Name}'.");
-            }
-        }
-
         if (_strictAutoMapping)
         {
-            foreach (var column in columnLookup.Keys)
-            {
-                if (!properties.Any(p => string.Equals(p.Name, column, StringComparison.OrdinalIgnoreCase)))
-                {
-                    throw new InvalidOperationException(
-                        $"No matching property found for column '{column}' on type '{type.Name}'.");
-                }
-            }
+            ValidateStrictPropertyMapping(type, columnLookup, writableProperties);
         }
+
+        var mappings = CreatePropertyMappings<T>(
+            writableProperties,
+            columnLookup,
+            skipPropertyNames: null);
 
         var createInstance = CreateDefaultConstructor<T>();
 
-        void Assign(T instance, SqlDataReader r)
+        void AssignInstance(T instance, SqlDataReader r)
         {
             foreach (var (ordinal, setter) in mappings)
             {
@@ -240,7 +247,94 @@ internal sealed class MooMapper
             }
         }
 
-        return new MooMapPlan<T>(createInstance, Assign);
+        return new MooMapPlan<T>(createInstance, AssignInstance);
+    }
+
+    private static Dictionary<string, int> CreateColumnLookup(SqlDataReader reader)
+    {
+        var columnLookup = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+
+        for (int i = 0; i < reader.FieldCount; i++)
+        {
+            columnLookup[reader.GetName(i)] = i;
+        }
+
+        return columnLookup;
+    }
+
+    private void ValidateStrictPropertyMapping(
+        Type type,
+        Dictionary<string, int> columnLookup,
+        PropertyInfo[] writableProperties)
+    {
+        foreach (var property in writableProperties)
+        {
+            if (!columnLookup.ContainsKey(property.Name))
+            {
+                throw new InvalidOperationException(
+                    $"No matching column found for property '{property.Name}' on type '{type.Name}'.");
+            }
+        }
+
+        foreach (var column in columnLookup.Keys)
+        {
+            if (!writableProperties.Any(p => string.Equals(p.Name, column, StringComparison.OrdinalIgnoreCase)))
+            {
+                throw new InvalidOperationException(
+                    $"No matching property found for column '{column}' on type '{type.Name}'.");
+            }
+        }
+    }
+
+    private void ValidateStrictConstructorMapping(
+        Type type,
+        Dictionary<string, int> columnLookup,
+        PropertyInfo[] writableProperties,
+        HashSet<string> ctorParameterNames)
+    {
+        foreach (var property in writableProperties)
+        {
+            if (!ctorParameterNames.Contains(property.Name) && !columnLookup.ContainsKey(property.Name))
+            {
+                throw new InvalidOperationException(
+                    $"No matching column or constructor parameter found for property '{property.Name}' on type '{type.Name}'.");
+            }
+        }
+
+        foreach (var column in columnLookup.Keys)
+        {
+            var matchesConstructorParameter = ctorParameterNames.Contains(column);
+            var matchesWritableProperty = writableProperties.Any(
+                p => string.Equals(p.Name, column, StringComparison.OrdinalIgnoreCase));
+
+            if (!matchesConstructorParameter && !matchesWritableProperty)
+            {
+                throw new InvalidOperationException(
+                    $"No matching constructor parameter or writable property found for column '{column}' on type '{type.Name}'.");
+            }
+        }
+    }
+
+    private static List<(int Ordinal, Action<T, object?> Setter)> CreatePropertyMappings<T>(
+        PropertyInfo[] writableProperties,
+        Dictionary<string, int> columnLookup,
+        HashSet<string>? skipPropertyNames)
+    {
+        var mappings = new List<(int Ordinal, Action<T, object?> Setter)>();
+
+        foreach (var property in writableProperties)
+        {
+            if (skipPropertyNames is not null && skipPropertyNames.Contains(property.Name))
+                continue;
+
+            if (columnLookup.TryGetValue(property.Name, out var ordinal))
+            {
+                var setter = CreateSetter<T>(property);
+                mappings.Add((ordinal, setter));
+            }
+        }
+
+        return mappings;
     }
 
     private ConstructorInfo? FindUsableConstructor<T>(SqlDataReader reader)
