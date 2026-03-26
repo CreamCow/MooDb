@@ -124,6 +124,20 @@ public sealed class MooParamsValidationTests
         Assert.Throws<ArgumentException>(action);
     }
 
+
+    [Fact]
+    public void Add_WhenRawParameterNameIsBlank_ThrowsArgumentException()
+    {
+        // Arrange
+        var parameters = new MooParams();
+
+        // Act
+        var action = () => parameters.Add(new Microsoft.Data.SqlClient.SqlParameter());
+
+        // Assert
+        Assert.Throws<ArgumentException>(action);
+    }
+
     [Fact]
     public void AddTableValuedParameter_WhenValueIsNull_ThrowsArgumentNullException()
     {

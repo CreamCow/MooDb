@@ -174,6 +174,11 @@ internal sealed class MooCommandExecutor
     {
         ArgumentNullException.ThrowIfNull(source);
 
+        if (source is ICloneable cloneable && cloneable.Clone() is SqlParameter clonedParameter)
+        {
+            return clonedParameter;
+        }
+
         var clone = new SqlParameter
         {
             ParameterName = source.ParameterName,

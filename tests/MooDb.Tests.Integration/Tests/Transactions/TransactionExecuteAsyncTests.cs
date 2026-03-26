@@ -58,6 +58,24 @@ public sealed class TransactionExecuteAsyncTests
             transaction.ExecuteAsync("dbo.usp_User_Count"));
     }
 
+
+    [Fact]
+    public async Task ExecuteAsync_WhenUsedAfterCommit_ThrowsInvalidOperationException()
+    {
+        // Arrange
+        await _fixture.ResetAsync();
+
+        var db = _fixture.CreateMooDb();
+        await using var transaction = await db.BeginTransactionAsync();
+        await transaction.CommitAsync();
+
+        // Act
+        var action = () => transaction.ExecuteAsync("dbo.usp_User_Count");
+
+        // Assert
+        await Assert.ThrowsAsync<InvalidOperationException>(action);
+    }
+
     [Fact]
     public async Task ExecuteAsync_WhenDisposedWithoutCommit_RollsBackChanges()
     {

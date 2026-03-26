@@ -49,6 +49,9 @@ public sealed class MooBulk
         var connection = context.Connection;
         var transaction = context.Transaction;
 
+        var shouldRunCleanup = false;
+        Exception? primaryException = null;
+
         try
         {
             if (connection.State != ConnectionState.Open)
@@ -63,6 +66,8 @@ public sealed class MooBulk
                     transaction,
                     options.PreparationSql,
                     cancellationToken);
+
+                shouldRunCleanup = !string.IsNullOrWhiteSpace(options.CleanupSql);
             }
 
             using (var bulkCopy = new SqlBulkCopy(connection, SqlBulkCopyOptions.Default, transaction))
@@ -87,17 +92,37 @@ public sealed class MooBulk
                 await bulkCopy.WriteToServerAsync(dataTable, cancellationToken);
             }
 
-            if (!string.IsNullOrWhiteSpace(options.CleanupSql))
+            if (shouldRunCleanup)
             {
                 await ExecuteSqlAsync(
                     connection,
                     transaction,
-                    options.CleanupSql,
+                    options.CleanupSql!,
                     cancellationToken);
             }
         }
+        catch (Exception ex)
+        {
+            primaryException = ex;
+            throw;
+        }
         finally
         {
+            if (shouldRunCleanup && primaryException is not null)
+            {
+                try
+                {
+                    await ExecuteSqlAsync(
+                        connection,
+                        transaction,
+                        options.CleanupSql!,
+                        cancellationToken);
+                }
+                catch
+                {
+                }
+            }
+
             if (context.OwnsConnection)
             {
                 await connection.DisposeAsync();

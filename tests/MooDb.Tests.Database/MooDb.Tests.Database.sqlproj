@@ -74,5 +74,7 @@
     <Build Include="usp_DateTime2_RoundTrip.sql" />
     <Build Include="udt_UserSeed.sql" />
     <Build Include="usp_User_InsertFromTable.sql" />
+    <Build Include="tbl_AllTypes.sql" />
+    <Build Include="usp_AllTypes_GetLatest.sql" />
   </ItemGroup>
 </Project>

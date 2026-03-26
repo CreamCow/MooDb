@@ -1,0 +1,31 @@
+CREATE TABLE [Tests].[tbl_AllTypes]
+(
+    [AllTypesId] INT IDENTITY(1,1) NOT NULL,
+    [BitValue] BIT NOT NULL,
+    [TinyIntValue] TINYINT NOT NULL,
+    [SmallIntValue] SMALLINT NOT NULL,
+    [IntValue] INT NOT NULL,
+    [BigIntValue] BIGINT NOT NULL,
+    [RealValue] REAL NOT NULL,
+    [FloatValue] FLOAT NOT NULL,
+    [UniqueIdentifierValue] UNIQUEIDENTIFIER NOT NULL,
+    [DateValue] DATE NOT NULL,
+    [DateTimeValue] DATETIME NOT NULL,
+    [SmallDateTimeValue] SMALLDATETIME NOT NULL,
+    [DateTime2Value] DATETIME2(7) NOT NULL,
+    [DateTimeOffsetValue] DATETIMEOFFSET(7) NOT NULL,
+    [TimeValue] TIME(7) NOT NULL,
+    [DecimalValue] DECIMAL(18,4) NOT NULL,
+    [MoneyValue] MONEY NOT NULL,
+    [SmallMoneyValue] SMALLMONEY NOT NULL,
+    [CharValue] CHAR(3) NOT NULL,
+    [VarCharValue] VARCHAR(20) NOT NULL,
+    [NCharValue] NCHAR(3) NOT NULL,
+    [NVarCharValue] NVARCHAR(20) NOT NULL,
+    [BinaryValue] BINARY(4) NOT NULL,
+    [VarBinaryValue] VARBINARY(4) NOT NULL,
+    [StatusById] INT NOT NULL,
+    [StatusByName] NVARCHAR(20) NOT NULL,
+
+    CONSTRAINT [pk_AllTypes] PRIMARY KEY ([AllTypesId])
+);
