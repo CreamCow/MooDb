@@ -167,7 +167,7 @@ internal sealed class MooMapper
             columns[i] = reader.GetName(i);
         }
 
-        return new MooMapCacheKey(typeof(T), columns);
+        return new MooMapCacheKey(typeof(T), _strictAutoMapping, columns);
     }
 
     private MooMapPlan<T> BuildPlan<T>(SqlDataReader reader)
