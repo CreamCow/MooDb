@@ -2,11 +2,13 @@
 
 
 /// <summary>
-/// Represents a unique key for identifying a mapping plan based on target type and result set shape.
+/// Represents a unique key for identifying a mapping plan based on target type,
+/// strict auto-mapping configuration, and result set shape.
 /// </summary>
 /// <remarks>
 /// The cache key is composed of:
 /// - the target CLR type being mapped to
+/// - whether strict auto-mapping is enabled
 /// - the ordered list of column names returned by the query
 ///
 /// Column order is significant because mapping relies on column ordinals for performance.
@@ -17,11 +19,13 @@
 internal sealed class MooMapCacheKey : IEquatable<MooMapCacheKey>
 {
     internal Type TargetType { get; }
+    internal bool StrictAutoMapping { get; }
     internal string[] Columns { get; }
 
-    internal MooMapCacheKey(Type targetType, string[] columns)
+    internal MooMapCacheKey(Type targetType, bool strictAutoMapping, string[] columns)
     {
         TargetType = targetType;
+        StrictAutoMapping = strictAutoMapping;
         Columns = columns;
     }
 
@@ -29,6 +33,7 @@ internal sealed class MooMapCacheKey : IEquatable<MooMapCacheKey>
     {
         if (other is null) return false;
         if (TargetType != other.TargetType) return false;
+        if (StrictAutoMapping != other.StrictAutoMapping) return false;
         if (Columns.Length != other.Columns.Length) return false;
 
         for (int i = 0; i < Columns.Length; i++)
@@ -47,6 +52,7 @@ internal sealed class MooMapCacheKey : IEquatable<MooMapCacheKey>
     {
         var hash = new HashCode();
         hash.Add(TargetType);
+        hash.Add(StrictAutoMapping);
 
         foreach (var column in Columns)
         {
