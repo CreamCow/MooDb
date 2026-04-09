@@ -36,7 +36,7 @@ MooDb targets SQL Server and is built on `Microsoft.Data.SqlClient`.
 ```csharp
 using MooDb;
 
-var db = new MooDb(connectionString);
+var db = new MooDbContext(connectionString);
 
 var user = await db.SingleAsync<User>(
     "dbo.usp_User_GetById",
@@ -57,14 +57,14 @@ var user = await db.Sql.SingleAsync<User>(
 
 ## Main concepts
 
-- `MooDb` is the main entry point
-- `MooDb.Sql` is the raw SQL escape hatch
+- `MooDbContext` is the main entry point
+- `MooDbContext.Sql` is the raw SQL escape hatch
 - `MooTransaction` is the transactional entry point
 - `MooParams` builds SQL Server parameters fluently
 - `IMooMultiReader` handles multiple results from one execution
 - `MooBulk` handles SQL Server bulk loading
-- `MooDbOptions` controls timeout and strict auto-mapping
-- `AddMooDbFactory()` registers factory support for dependency injection
+- `MooDbContextOptions` controls timeout and strict auto-mapping
+- `AddMooDbContextFactory()` registers factory support for dependency injection
 
 ## Documentation
 
