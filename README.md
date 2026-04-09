@@ -21,7 +21,7 @@ MooDb is built around a few simple ideas:
 - **Bulk loading** for fast back-office and batch data movement
 - **No forced abstraction layer** for ordinary usage
 
-MooDb stays close to ADO.NET while removing repetitive plumbing.
+MooDb stays close to ADO.NET while removing repetitive plumbing and ceremony.
 
 ## Installation
 
@@ -36,6 +36,7 @@ MooDb targets SQL Server and is built on `Microsoft.Data.SqlClient`.
 ```csharp
 using MooDb;
 
+// lightweight entry point
 var db = new MooDbContext(connectionString);
 
 var user = await db.SingleAsync<User>(
@@ -57,7 +58,7 @@ var user = await db.Sql.SingleAsync<User>(
 
 ## Main concepts
 
-- `MooDbContext` is the main entry point
+- `MooDbContext` is the main entry point (not a unit of work)
 - `MooDbContext.Sql` is the raw SQL escape hatch
 - `MooTransaction` is the transactional entry point
 - `MooParams` builds SQL Server parameters fluently
@@ -65,6 +66,20 @@ var user = await db.Sql.SingleAsync<User>(
 - `MooBulk` handles SQL Server bulk loading
 - `MooDbContextOptions` controls timeout and strict auto-mapping
 - `AddMooDbContextFactory()` registers factory support for dependency injection
+
+## Lifetime and disposal
+
+`MooDbContext` is not a unit of work and is not disposed.
+
+Each call executes using its own connection internally.  
+When you need a unit of work, use a transaction:
+
+```csharp
+await using var tran = await db.BeginTransactionAsync();
+```
+
+`MooTransaction` is the disposable unit.  
+If it is disposed without being committed, it is rolled back automatically.
 
 ## Documentation
 
