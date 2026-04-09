@@ -9,11 +9,11 @@ using System.Data;
 namespace MooDb
 {
     /// <summary>
-    /// Entry point for executing database operations using MooDb.
+    /// Entry point for executing database operations using MooDbContext.
     /// </summary>
     /// <remarks>
     /// <para>
-    /// MooDb provides a lightweight, predictable API for executing stored procedures
+    /// MooDbContext provides a lightweight, predictable API for executing stored procedures
     /// and mapping results to .NET types.
     /// </para>
     /// <para>
@@ -28,19 +28,19 @@ namespace MooDb
     /// - records or types with matching constructor parameters
     /// </para>
     /// <para>
-    /// MooDb is designed around a stored procedure-first approach. For SQL text execution,
+    /// MooDbContext is designed around a stored procedure-first approach. For SQL text execution,
     /// use the <see cref="Sql"/> property.
     /// </para>
     /// <para>
     /// Instances can be created using either:
-    /// - a connection string (MooDb manages connection lifetime)
+    /// - a connection string (MooDbContext manages connection lifetime)
     /// - an existing <see cref="SqlConnection"/> (caller manages connection lifetime)
     /// </para>
     /// <para>
     /// The API is intentionally minimal, favouring explicit behaviour and predictable performance.
     /// </para>
     /// </remarks>
-    public sealed class MooDb
+    public sealed class MooDbContext
     {
         // Fields
         private readonly MooCommandExecutor _executor;
@@ -54,7 +54,7 @@ namespace MooDb
         /// Provides access to SQL text execution outside a transaction.
         /// </summary>
         /// <remarks>
-        /// MooDb is stored procedure-first. Use this property when you need to execute raw SQL text.
+        /// MooDbContext is stored procedure-first. Use this property when you need to execute raw SQL text.
         /// </remarks>
         public MooSql Sql { get; }
 
@@ -68,17 +68,17 @@ namespace MooDb
 
         // Constructors
         /// <summary>
-        /// Creates a new <see cref="MooDb"/> instance that manages connections using the supplied connection string.
+        /// Creates a new <see cref="MooDbContext"/> instance that manages connections using the supplied connection string.
         /// </summary>
         /// <param name="connectionString">The SQL Server connection string.</param>
-        /// <param name="options">Optional MooDb configuration settings.</param>
-        public MooDb(string connectionString, MooDbOptions? options = null)
+        /// <param name="options">Optional MooDbContext configuration settings.</param>
+        public MooDbContext(string connectionString, MooDbContextOptions? options = null)
         {
             MooGuard.AgainstNullOrWhiteSpace(connectionString, nameof(connectionString), "Connection string");
             _connectionString = connectionString;
             _connection = null;
 
-            var opts = options ?? new MooDbOptions();
+            var opts = options ?? new MooDbContextOptions();
             _executor = new MooCommandExecutor(opts.CommandTimeoutSeconds);
             _mapper = new MooMapper(opts.StrictAutoMapping);
             Sql = new MooSql(_executor, _mapper, CreateExecutionContext);
@@ -86,21 +86,21 @@ namespace MooDb
         }
 
         /// <summary>
-        /// Creates a new <see cref="MooDb"/> instance that uses an existing openable <see cref="SqlConnection"/>.
+        /// Creates a new <see cref="MooDbContext"/> instance that uses an existing openable <see cref="SqlConnection"/>.
         /// </summary>
         /// <param name="connection">The caller-managed SQL Server connection.</param>
-        /// <param name="options">Optional MooDb configuration settings.</param>
-        public MooDb(SqlConnection connection, MooDbOptions? options = null)
+        /// <param name="options">Optional MooDbContext configuration settings.</param>
+        public MooDbContext(SqlConnection connection, MooDbContextOptions? options = null)
         {
             _connection = connection ?? throw new ArgumentNullException(nameof(connection));
             _connectionString = null;
 
-            var opts = options ?? new MooDbOptions();
+            var opts = options ?? new MooDbContextOptions();
             _executor = new MooCommandExecutor(opts.CommandTimeoutSeconds);
             _mapper = new MooMapper(opts.StrictAutoMapping);
             Sql = new MooSql(_executor, _mapper, CreateExecutionContext);
             Bulk = new MooBulk(CreateExecutionContext);
-        }
+         }
 
 
         // Public API
@@ -229,7 +229,7 @@ namespace MooDb
         /// Throws an <see cref="InvalidOperationException"/> if more than one row is returned.
         /// </para>
         /// <para>
-        /// The supplied <paramref name="map"/> delegate is invoked for each row and bypasses MooDb automatic mapping.
+        /// The supplied <paramref name="map"/> delegate is invoked for each row and bypasses MooDbContext automatic mapping.
         /// </para>
         /// <para>
         /// This is useful when you want explicit materialisation logic, reusable map classes, or lower mapping overhead on hot paths.
@@ -310,7 +310,7 @@ namespace MooDb
         /// </summary>
         /// <remarks>
         /// <para>
-        /// The supplied <paramref name="map"/> delegate is invoked once per row and bypasses MooDb automatic mapping.
+        /// The supplied <paramref name="map"/> delegate is invoked once per row and bypasses MooDbContext automatic mapping.
         /// </para>
         /// <para>
         /// This is useful when the result shape does not map cleanly by convention, when you want reusable map classes, or when you want precise control over materialisation.
@@ -362,7 +362,7 @@ namespace MooDb
         /// Each call on <paramref name="read"/> consumes the next result set in order.
         /// </para>
         /// <para>
-        /// MooDb fully materialises the results inside the method call, so callers do not manage live reader objects.
+        /// MooDbContext fully materialises the results inside the method call, so callers do not manage live reader objects.
         /// </para>
         /// <para>
         /// Attempting to read beyond the available result sets throws an <see cref="InvalidOperationException"/>.
@@ -412,12 +412,12 @@ namespace MooDb
         /// If the transaction is disposed without being committed, it is rolled back.
         /// </para>
         /// <para>
-        /// If MooDb was created with a connection string, the connection is owned by the transaction
+        /// If MooDbContext was created with a connection string, the connection is owned by the transaction
         /// and disposed when the transaction is disposed.
         /// </para>
         /// <para>
-        /// If MooDb was created with an existing <see cref="SqlConnection"/>, the connection is reused
-        /// and is not disposed by MooDb.
+        /// If MooDbContext was created with an existing <see cref="SqlConnection"/>, the connection is reused
+        /// and is not disposed by MooDbContext.
         /// </para>
         /// </remarks>
         public async Task<MooTransaction> BeginTransactionAsync(

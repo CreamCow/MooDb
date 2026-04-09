@@ -19,7 +19,7 @@ public sealed class SqlSingleAndListAsyncTests
         // Arrange
         await _fixture.ResetAsync();
 
-        var db = _fixture.CreateMooDb();
+        var db = _fixture.CreateMooDbContext();
 
         // Act
         var user = await db.Sql.SingleAsync<TestUser>(
@@ -62,7 +62,7 @@ public sealed class SqlSingleAndListAsyncTests
             (N'grace@example.com', N'Grace Hopper', 85, 1, '2024-02-03T04:05:06', NULL);
             """);
 
-        var db = _fixture.CreateMooDb();
+        var db = _fixture.CreateMooDbContext();
 
         // Act
         await Assert.ThrowsAsync<InvalidOperationException>(() =>
@@ -87,7 +87,7 @@ public sealed class SqlSingleAndListAsyncTests
         // Arrange
         await _fixture.ResetAsync();
 
-        var db = _fixture.CreateMooDb();
+        var db = _fixture.CreateMooDbContext();
 
         // Act
         var users = await db.Sql.ListAsync<TestUser>(

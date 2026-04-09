@@ -19,7 +19,7 @@ public sealed class ExecuteAsyncTests
         // Arrange
         await _fixture.ResetAsync();
 
-        var db = _fixture.CreateMooDb();
+        var db = _fixture.CreateMooDbContext();
 
         var createdUtc = new DateTime(2024, 01, 02, 03, 04, 05, DateTimeKind.Unspecified);
 
@@ -90,7 +90,7 @@ public sealed class ExecuteAsyncTests
         var userId = await _fixture.ScalarSqlAsync<int>(
             "SELECT TOP (1) [UserId] FROM [dbo].[tbl_User];");
 
-        var db = _fixture.CreateMooDb();
+        var db = _fixture.CreateMooDbContext();
 
         var parameters = new MooParams()
             .AddInt("@UserId", userId)

@@ -115,7 +115,7 @@ public sealed class AllTypesMappingTests
                 new SqlParameter("@StatusByName", "Active")
             ]);
 
-        var db = _fixture.CreateMooDb();
+        var db = _fixture.CreateMooDbContext();
 
         // Act
         var row = await db.SingleAsync<TestAllTypesRow>("Tests.usp_AllTypes_GetLatest");

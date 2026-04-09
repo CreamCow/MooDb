@@ -7,7 +7,38 @@
 		<AnalysisLevel>latest</AnalysisLevel>
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
 		<TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+
+		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+
+		<PackageId>MooDb</PackageId>
+		<Version>0.9.0</Version>
+		<Authors>Phillip Smith</Authors>
+		<Company>CreamCow Ltd.</Company>
+		<Owners>CreamCow Ltd.</Owners>
+
+		<Description>MooDb is a micro ORM for .NET that gives you full control of your database while keeping your C# clean, explicit, and fast.</Description>
+		<PackageTags>orm;micro-orm;sql;dotnet;database;ado.net;moodb</PackageTags>
+
+		<PackageLicenseExpression>MIT</PackageLicenseExpression>
+		<PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+
+		<PackageReadmeFile>README.md</PackageReadmeFile>
+
+		<ProjectUrl>https://moodb.net/</ProjectUrl>
+		<PackageProjectUrl>https://moodb.net/</PackageProjectUrl>
+		<RepositoryUrl>https://github.com/CreamCow/MooDb</RepositoryUrl>
+		<RepositoryType>git</RepositoryType>
+		<PublishRepositoryUrl>true</PublishRepositoryUrl>
+
+		<IncludeSymbols>true</IncludeSymbols>
+		<SymbolPackageFormat>snupkg</SymbolPackageFormat>
 	</PropertyGroup>
+
+	<ItemGroup>
+		<Compile Remove="Parameters\**" />
+		<EmbeddedResource Remove="Parameters\**" />
+		<None Remove="Parameters\**" />
+	</ItemGroup>
 
 	<ItemGroup>
 		<PackageReference Include="Microsoft.Data.SqlClient" Version="7.0.0" />
@@ -15,8 +46,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<Folder Include="NewFolder\" />
-		<Folder Include="Parameters\" />
+		<None Include="README.md" Pack="true" PackagePath="\" />
 	</ItemGroup>
 
 </Project>

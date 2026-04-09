@@ -1,12 +1,12 @@
 ﻿namespace MooDb.Tests.Unit.Configuration;
 
-public sealed class MooDbOptionsTests
+public sealed class MooDbContextOptionsTests
 {
     [Fact]
     public void Constructor_WhenCreated_UsesExpectedDefaults()
     {
         // Arrange
-        var options = new MooDbOptions();
+        var options = new MooDbContextOptions();
 
         // Act
 
@@ -19,7 +19,7 @@ public sealed class MooDbOptionsTests
     public void Properties_WhenAssigned_RetainAssignedValues()
     {
         // Arrange
-        var options = new MooDbOptions
+        var options = new MooDbContextOptions
         {
             CommandTimeoutSeconds = 120,
             StrictAutoMapping = true

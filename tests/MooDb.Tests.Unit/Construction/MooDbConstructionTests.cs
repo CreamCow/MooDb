@@ -10,7 +10,7 @@ public sealed class MooDbConstructionTests
         // Arrange
 
         // Act
-        var action = () => new MooDb((string)null!);
+        var action = () => new MooDbContext((string)null!);
 
         // Assert
         Assert.Throws<ArgumentException>(action);
@@ -22,7 +22,7 @@ public sealed class MooDbConstructionTests
         // Arrange
 
         // Act
-        var action = () => new MooDb((SqlConnection)null!);
+        var action = () => new MooDbContext((SqlConnection)null!);
 
         // Assert
         Assert.Throws<ArgumentNullException>(action);
@@ -34,7 +34,7 @@ public sealed class MooDbConstructionTests
         // Arrange
 
         // Act
-        var db = new MooDb("Server=(local);Database=Test;Trusted_Connection=True;TrustServerCertificate=True;");
+        var db = new MooDbContext("Server=(local);Database=Test;Trusted_Connection=True;TrustServerCertificate=True;");
 
         // Assert
         Assert.NotNull(db.Sql);
@@ -48,7 +48,7 @@ public sealed class MooDbConstructionTests
         using var connection = new SqlConnection();
 
         // Act
-        var db = new MooDb(connection);
+        var db = new MooDbContext(connection);
 
         // Assert
         Assert.NotNull(db.Sql);

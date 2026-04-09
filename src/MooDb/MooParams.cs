@@ -5,7 +5,7 @@ using Microsoft.Data.SqlClient;
 namespace MooDb;
 
 /// <summary>
-/// Represents a collection of SQL Server parameters for use with MooDb commands.
+/// Represents a collection of SQL Server parameters for use with MooDbContext commands.
 /// </summary>
 /// <remarks>
 /// <para>
@@ -947,7 +947,7 @@ public sealed class MooParams : IReadOnlyList<SqlParameter>
     /// <remarks>
     /// <para>
     /// This allows <see cref="MooParams"/> to be used as an <see cref="IReadOnlyList{T}"/>
-    /// when passed into MooDb execution methods.
+    /// when passed into MooDbContext execution methods.
     /// </para>
     /// </remarks>
     public SqlParameter this[int index] => _parameters[index];
@@ -959,7 +959,7 @@ public sealed class MooParams : IReadOnlyList<SqlParameter>
     /// <remarks>
     /// <para>
     /// This allows <see cref="MooParams"/> to be used as an <see cref="IReadOnlyList{T}"/>
-    /// when passed into MooDb execution methods.
+    /// when passed into MooDbContext execution methods.
     /// </para>
     /// </remarks>
     public int Count => _parameters.Count;

@@ -6,14 +6,14 @@ using System.Data;
 namespace MooDb.Sql;
 
 /// <summary>
-/// Provides raw SQL execution for MooDb.
+/// Provides raw SQL execution for MooDbContext.
 /// </summary>
 /// <remarks>
 /// <para>
-/// <see cref="MooSql"/> mirrors the core query surface of <see cref="global::MooDb.MooDb"/>, but executes SQL text instead of stored procedures.
+/// <see cref="MooSql"/> mirrors the core query surface of <see cref="global::MooDb.MooDbContext"/>, but executes SQL text instead of stored procedures.
 /// </para>
 /// <para>
-/// MooDb is designed around a stored procedure-first model. This type exists as an explicit SQL text escape hatch.
+/// MooDbContext is designed around a stored procedure-first model. This type exists as an explicit SQL text escape hatch.
 /// </para>
 /// </remarks>
 public sealed class MooSql
@@ -51,7 +51,7 @@ public sealed class MooSql
     /// The return value represents the number of rows affected, as reported by SQL Server.
     /// </para>
     /// <para>
-    /// MooDb is designed for stored procedure usage. This method provides a SQL text
+    /// MooDbContext is designed for stored procedure usage. This method provides a SQL text
     /// alternative where needed.
     /// </para>
     /// </remarks>
@@ -87,7 +87,7 @@ public sealed class MooSql
     /// Use a nullable type such as <c>int?</c> when absence must be distinguishable from a non-null default value.
     /// </para>
     /// <para>
-    /// MooDb is designed for stored procedure usage. This method provides a SQL text alternative where needed.
+    /// MooDbContext is designed for stored procedure usage. This method provides a SQL text alternative where needed.
     /// </para>
     /// </remarks>
     public Task<T> ScalarAsync<T>(
@@ -130,7 +130,7 @@ public sealed class MooSql
     /// Mapping rules are the same as <see cref="ListAsync{T}(string, System.Func{Microsoft.Data.SqlClient.SqlDataReader, T}, System.Collections.Generic.IReadOnlyList{Microsoft.Data.SqlClient.SqlParameter}?, int?, System.Threading.CancellationToken)"/>.
     /// </para>
     /// <para>
-    /// MooDb is designed for stored procedure usage. This method provides a SQL text
+    /// MooDbContext is designed for stored procedure usage. This method provides a SQL text
     /// alternative where needed.
     /// </para>
     /// </remarks>
@@ -172,10 +172,10 @@ public sealed class MooSql
     /// Throws an <see cref="InvalidOperationException"/> if more than one row is returned.
     /// </para>
     /// <para>
-    /// The supplied <paramref name="map"/> delegate is invoked for each row and bypasses MooDb automatic mapping.
+    /// The supplied <paramref name="map"/> delegate is invoked for each row and bypasses MooDbContext automatic mapping.
     /// </para>
     /// <para>
-    /// MooDb is designed for stored procedure usage. This overload provides a SQL text alternative with explicit row materialisation.
+    /// MooDbContext is designed for stored procedure usage. This overload provides a SQL text alternative with explicit row materialisation.
     /// </para>
     /// </remarks>
     public Task<T?> SingleAsync<T>(
@@ -225,7 +225,7 @@ public sealed class MooSql
     /// does not match the target type.
     /// </para>
     /// <para>
-    /// MooDb is designed for stored procedure usage. This method provides a SQL text
+    /// MooDbContext is designed for stored procedure usage. This method provides a SQL text
     /// alternative where needed.
     /// </para>
     /// </remarks>
@@ -258,13 +258,13 @@ public sealed class MooSql
     /// </summary>
     /// <remarks>
     /// <para>
-    /// The supplied <paramref name="map"/> delegate is invoked once per row and bypasses MooDb automatic mapping.
+    /// The supplied <paramref name="map"/> delegate is invoked once per row and bypasses MooDbContext automatic mapping.
     /// </para>
     /// <para>
     /// This is useful when the result shape does not map cleanly by convention, when you want reusable map classes, or when you want precise control over materialisation.
     /// </para>
     /// <para>
-    /// MooDb is designed for stored procedure usage. This overload provides a SQL text alternative with explicit row materialisation.
+    /// MooDbContext is designed for stored procedure usage. This overload provides a SQL text alternative with explicit row materialisation.
     /// </para>
     /// </remarks>
     public Task<List<T>> ListAsync<T>(
@@ -310,7 +310,7 @@ public sealed class MooSql
     /// Each call on <paramref name="read"/> consumes the next result set in order.
     /// </para>
     /// <para>
-    /// MooDb fully materialises the results inside the method call, so callers do not manage live reader objects.
+    /// MooDbContext fully materialises the results inside the method call, so callers do not manage live reader objects.
     /// </para>
     /// <para>
     /// Attempting to read beyond the available result sets throws an <see cref="InvalidOperationException"/>.

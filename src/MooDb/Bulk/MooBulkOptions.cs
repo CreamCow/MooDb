@@ -1,7 +1,7 @@
 ﻿namespace MooDb.Bulk;
 
 /// <summary>
-/// Configures a MooDb bulk insert operation.
+/// Configures a MooDbContext bulk insert operation.
 /// </summary>
 public sealed class MooBulkOptions
 {

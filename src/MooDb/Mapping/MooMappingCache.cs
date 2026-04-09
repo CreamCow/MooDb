@@ -7,7 +7,7 @@ namespace MooDb.Mapping;
 /// </summary>
 /// <remarks>
 /// Mapping plans are expensive to build due to reflection and delegate compilation.
-/// This cache ensures that each unique mapping plan is created only once and reused across all MooDb instances.
+/// This cache ensures that each unique mapping plan is created only once and reused across all MooDbContext instances.
 ///
 /// The cache is:
 /// - static and shared across the application

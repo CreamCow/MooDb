@@ -20,7 +20,7 @@ namespace MooDb;
 public interface IMooMultiReader
 {
     /// <summary>
-    /// Reads the next result set and returns a single mapped value using MooDb automatic mapping.
+    /// Reads the next result set and returns a single mapped value using MooDbContext automatic mapping.
     /// </summary>
     /// <typeparam name="T">The target type.</typeparam>
     /// <returns>
@@ -42,7 +42,7 @@ public interface IMooMultiReader
     T? Single<T>(Func<SqlDataReader, T> map);
 
     /// <summary>
-    /// Reads the next result set and maps all rows to a list using MooDb automatic mapping.
+    /// Reads the next result set and maps all rows to a list using MooDbContext automatic mapping.
     /// </summary>
     /// <typeparam name="T">The target type.</typeparam>
     /// <returns>A list containing all mapped rows from the next result set.</returns>

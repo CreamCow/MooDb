@@ -33,7 +33,7 @@ public sealed class StoredProcedureQueryMultipleAsyncCustomMappingTests
             SET IDENTITY_INSERT [dbo].[tbl_Order] OFF;
             """);
 
-        var db = _fixture.CreateMooDb();
+        var db = _fixture.CreateMooDbContext();
         var parameters = new MooParams().AddInt("@UserId", 1);
 
         // Act

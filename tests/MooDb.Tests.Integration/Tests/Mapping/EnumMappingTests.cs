@@ -19,7 +19,7 @@ public sealed class EnumMappingTests
         // Arrange
         await _fixture.ResetAsync();
 
-        var db = _fixture.CreateMooDb();
+        var db = _fixture.CreateMooDbContext();
 
         // Act
         var result = await db.Sql.SingleAsync<IntEnumRow>("SELECT CAST(2 AS INT) AS [Status];");
@@ -35,7 +35,7 @@ public sealed class EnumMappingTests
         // Arrange
         await _fixture.ResetAsync();
 
-        var db = _fixture.CreateMooDb();
+        var db = _fixture.CreateMooDbContext();
 
         // Act
         var result = await db.Sql.SingleAsync<StringEnumRow>("SELECT CAST(N'Active' AS NVARCHAR(20)) AS [Status];");

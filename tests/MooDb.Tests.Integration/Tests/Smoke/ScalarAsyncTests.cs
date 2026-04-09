@@ -19,7 +19,7 @@ public sealed class ScalarAsyncTests
         // Arrange
         await _fixture.ResetAsync();
 
-        var db = _fixture.CreateMooDb();
+        var db = _fixture.CreateMooDbContext();
 
         // Act
         var count = await db.ScalarAsync<int>("dbo.usp_User_Count");
@@ -79,7 +79,7 @@ public sealed class ScalarAsyncTests
                 new SqlParameter("@UpdatedUtc2", DBNull.Value)
             ]);
 
-        var db = _fixture.CreateMooDb();
+        var db = _fixture.CreateMooDbContext();
 
         // Act
         var count = await db.ScalarAsync<int>("dbo.usp_User_Count");

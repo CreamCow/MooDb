@@ -24,7 +24,7 @@ public sealed class ExecuteAsyncOutputParameterTests
             .AddInt("@OutputValue", null, ParameterDirection.Output)
             .AddNVarChar("@InputOutputText", "Start", 100, ParameterDirection.InputOutput);
 
-        var db = _fixture.CreateMooDb();
+        var db = _fixture.CreateMooDbContext();
 
         // Act
         await db.ExecuteAsync("Tests.usp_OutputParameters", parameters);
@@ -45,7 +45,7 @@ public sealed class ExecuteAsyncOutputParameterTests
             .AddInt("@OutputValue", null, ParameterDirection.Output)
             .AddNVarChar("@InputOutputText", "Raw", 100, ParameterDirection.InputOutput);
 
-        var db = _fixture.CreateMooDb();
+        var db = _fixture.CreateMooDbContext();
 
         // Act
         await db.ExecuteAsync("Tests.usp_OutputParameters", parameters);
@@ -66,7 +66,7 @@ public sealed class ExecuteAsyncOutputParameterTests
             .AddInt("@OutputValue", null, ParameterDirection.Output)
             .AddNVarChar("@InputOutputText", null, 100, ParameterDirection.InputOutput);
 
-        var db = _fixture.CreateMooDb();
+        var db = _fixture.CreateMooDbContext();
 
         // Act
         await db.ExecuteAsync("Tests.usp_OutputParameters", parameters);
@@ -87,7 +87,7 @@ public sealed class ExecuteAsyncOutputParameterTests
             .AddInt("@OutputValue", null, ParameterDirection.Output)
             .AddNVarChar("@InputOutputText", "Hello", 100, ParameterDirection.InputOutput);
 
-        var db = _fixture.CreateMooDb();
+        var db = _fixture.CreateMooDbContext();
 
         // Act
         await db.ExecuteAsync("Tests.usp_OutputParameters", parameters);
@@ -106,7 +106,7 @@ public sealed class ExecuteAsyncOutputParameterTests
             .AddInt("@OutputValue", null, ParameterDirection.Output)
             .AddNVarChar("@InputOutputText", "Seed", 100, ParameterDirection.InputOutput);
 
-        var db = _fixture.CreateMooDb();
+        var db = _fixture.CreateMooDbContext();
 
         // Act
         await db.ExecuteAsync("Tests.usp_OutputParameters_DbNull", parameters);

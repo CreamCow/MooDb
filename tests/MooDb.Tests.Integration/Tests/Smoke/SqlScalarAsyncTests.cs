@@ -18,7 +18,7 @@ public sealed class SqlScalarAsyncTests
         // Arrange
         await _fixture.ResetAsync();
 
-        var db = _fixture.CreateMooDb();
+        var db = _fixture.CreateMooDbContext();
 
         // Act
         var value = await db.Sql.ScalarAsync<int>("SELECT CAST(NULL AS int);");
@@ -33,7 +33,7 @@ public sealed class SqlScalarAsyncTests
         // Arrange
         await _fixture.ResetAsync();
 
-        var db = _fixture.CreateMooDb();
+        var db = _fixture.CreateMooDbContext();
 
         // Act
         var value = await db.Sql.ScalarAsync<int?>("SELECT CAST(NULL AS int);");

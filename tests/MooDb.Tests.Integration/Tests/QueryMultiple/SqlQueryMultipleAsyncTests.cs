@@ -33,7 +33,7 @@ public sealed class SqlQueryMultipleAsyncTests
             SET IDENTITY_INSERT [dbo].[tbl_Order] OFF;
             """);
 
-        var db = _fixture.CreateMooDb();
+        var db = _fixture.CreateMooDbContext();
 
         // Act
         var result = await db.Sql.QueryMultipleAsync(

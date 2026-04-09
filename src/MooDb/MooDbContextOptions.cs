@@ -1,13 +1,13 @@
 ﻿namespace MooDb;
 
 /// <summary>
-/// Configures MooDb execution and mapping behaviour.
+/// Configures MooDbContext execution and mapping behaviour.
 /// </summary>
 /// <remarks>
 /// Use <see cref="CommandTimeoutSeconds"/> to set the default command timeout and
 /// <see cref="StrictAutoMapping"/> to control auto-mapping validation behaviour.
 /// </remarks>
-public sealed class MooDbOptions
+public sealed class MooDbContextOptions
 {
     /// <summary>
     /// Gets or sets the default command timeout, in seconds, used when a command-specific timeout is not supplied.
@@ -22,7 +22,7 @@ public sealed class MooDbOptions
     /// Enables strict validation of result set shape and type compatibility during auto-mapping.
     /// </summary>
     /// <remarks>
-    /// When enabled, MooDb will throw an exception if:
+    /// When enabled, MooDbContext will throw an exception if:
     /// - a column in the result set does not have a matching property on the target type
     /// - a property on the target type does not have a corresponding column in the result set
     /// - a value cannot be assigned to the target property type (including failed type conversion)

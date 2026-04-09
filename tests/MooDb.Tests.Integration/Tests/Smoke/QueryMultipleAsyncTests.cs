@@ -100,7 +100,7 @@ public sealed class QueryMultipleAsyncTests
                 new SqlParameter("@OrderCreatedUtc2", firstOrderCreatedUtc)
             ]);
 
-        var db = _fixture.CreateMooDb();
+        var db = _fixture.CreateMooDbContext();
         var parameters = new MooParams().AddInt("@UserId", userId);
 
         // Act
@@ -184,7 +184,7 @@ public sealed class QueryMultipleAsyncTests
                 new SqlParameter("@UpdatedUtc", DBNull.Value)
             ]);
 
-        var db = _fixture.CreateMooDb();
+        var db = _fixture.CreateMooDbContext();
         var parameters = new MooParams().AddInt("@UserId", userId);
 
         // Act

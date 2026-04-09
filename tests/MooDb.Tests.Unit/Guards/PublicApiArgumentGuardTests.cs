@@ -8,7 +8,7 @@ public sealed class PublicApiArgumentGuardTests
     public async Task MooDbExecuteAsync_WhenProcedureIsBlank_ThrowsArgumentException()
     {
         // Arrange
-        var db = new MooDb(ConnectionString);
+        var db = new MooDbContext(ConnectionString);
 
         // Act
         var action = () => db.ExecuteAsync(" ");
@@ -21,7 +21,7 @@ public sealed class PublicApiArgumentGuardTests
     public async Task MooDbScalarAsync_WhenProcedureIsBlank_ThrowsArgumentException()
     {
         // Arrange
-        var db = new MooDb(ConnectionString);
+        var db = new MooDbContext(ConnectionString);
 
         // Act
         var action = () => db.ScalarAsync<int>(" ");
@@ -34,7 +34,7 @@ public sealed class PublicApiArgumentGuardTests
     public async Task MooDbSingleAsync_WhenProcedureIsBlank_ThrowsArgumentException()
     {
         // Arrange
-        var db = new MooDb(ConnectionString);
+        var db = new MooDbContext(ConnectionString);
 
         // Act
         var action = () => db.SingleAsync<object>(" ");
@@ -47,7 +47,7 @@ public sealed class PublicApiArgumentGuardTests
     public async Task MooDbListAsync_WhenProcedureIsBlank_ThrowsArgumentException()
     {
         // Arrange
-        var db = new MooDb(ConnectionString);
+        var db = new MooDbContext(ConnectionString);
 
         // Act
         var action = () => db.ListAsync<object>(" ");
@@ -60,7 +60,7 @@ public sealed class PublicApiArgumentGuardTests
     public async Task MooDbQueryMultipleAsync_WhenProcedureIsBlank_ThrowsArgumentException()
     {
         // Arrange
-        var db = new MooDb(ConnectionString);
+        var db = new MooDbContext(ConnectionString);
 
         // Act
         var action = () => db.QueryMultipleAsync(
@@ -75,7 +75,7 @@ public sealed class PublicApiArgumentGuardTests
     public async Task MooSqlExecuteAsync_WhenSqlIsBlank_ThrowsArgumentException()
     {
         // Arrange
-        var db = new MooDb(ConnectionString);
+        var db = new MooDbContext(ConnectionString);
 
         // Act
         var action = () => db.Sql.ExecuteAsync(" ");
@@ -88,7 +88,7 @@ public sealed class PublicApiArgumentGuardTests
     public async Task MooSqlScalarAsync_WhenSqlIsBlank_ThrowsArgumentException()
     {
         // Arrange
-        var db = new MooDb(ConnectionString);
+        var db = new MooDbContext(ConnectionString);
 
         // Act
         var action = () => db.Sql.ScalarAsync<int>(" ");
@@ -101,7 +101,7 @@ public sealed class PublicApiArgumentGuardTests
     public async Task MooSqlSingleAsync_WhenSqlIsBlank_ThrowsArgumentException()
     {
         // Arrange
-        var db = new MooDb(ConnectionString);
+        var db = new MooDbContext(ConnectionString);
 
         // Act
         var action = () => db.Sql.SingleAsync<object>(" ");
@@ -114,7 +114,7 @@ public sealed class PublicApiArgumentGuardTests
     public async Task MooSqlListAsync_WhenSqlIsBlank_ThrowsArgumentException()
     {
         // Arrange
-        var db = new MooDb(ConnectionString);
+        var db = new MooDbContext(ConnectionString);
 
         // Act
         var action = () => db.Sql.ListAsync<object>(" ");
@@ -127,7 +127,7 @@ public sealed class PublicApiArgumentGuardTests
     public async Task MooSqlQueryMultipleAsync_WhenSqlIsBlank_ThrowsArgumentException()
     {
         // Arrange
-        var db = new MooDb(ConnectionString);
+        var db = new MooDbContext(ConnectionString);
 
         // Act
         var action = () => db.Sql.QueryMultipleAsync(
@@ -142,7 +142,7 @@ public sealed class PublicApiArgumentGuardTests
     public async Task MooSqlSingleAsyncCustomMap_WhenMapIsNull_ThrowsArgumentNullException()
     {
         // Arrange
-        var db = new MooDb(ConnectionString);
+        var db = new MooDbContext(ConnectionString);
 
         // Act
         var action = () => db.Sql.SingleAsync<object>(
@@ -157,7 +157,7 @@ public sealed class PublicApiArgumentGuardTests
     public async Task MooSqlListAsyncCustomMap_WhenMapIsNull_ThrowsArgumentNullException()
     {
         // Arrange
-        var db = new MooDb(ConnectionString);
+        var db = new MooDbContext(ConnectionString);
 
         // Act
         var action = () => db.Sql.ListAsync<object>(
