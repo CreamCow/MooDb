@@ -60,7 +60,7 @@ public sealed class SingleAsyncTests
             new SqlParameter("@UpdatedUtc", DBNull.Value)
             ]);
 
-        var db = _fixture.CreateMooDb();
+        var db = _fixture.CreateMooDbContext();
 
         var parameters = new MooParams()
             .AddInt("@UserId", userId);
@@ -87,7 +87,7 @@ public sealed class SingleAsyncTests
         // Arrange
         await _fixture.ResetAsync();
 
-        var db = _fixture.CreateMooDb();
+        var db = _fixture.CreateMooDbContext();
 
         var parameters = new MooParams()
             .AddInt("@UserId", 999);

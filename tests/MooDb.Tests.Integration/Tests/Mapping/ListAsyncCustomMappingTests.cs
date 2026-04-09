@@ -28,7 +28,7 @@ public sealed class ListAsyncCustomMappingTests
             SET IDENTITY_INSERT [dbo].[tbl_User] OFF;
             """);
 
-        var db = _fixture.CreateMooDb();
+        var db = _fixture.CreateMooDbContext();
 
         // Act
         var users = await db.ListAsync(

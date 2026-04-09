@@ -19,7 +19,7 @@ public sealed class SqlScalarEnumTests
         // Arrange
         await _fixture.ResetAsync();
 
-        var db = _fixture.CreateMooDb();
+        var db = _fixture.CreateMooDbContext();
 
         // Act
         var result = await db.Sql.ScalarAsync<TestStatus>("SELECT CAST(1 AS INT);");
@@ -34,7 +34,7 @@ public sealed class SqlScalarEnumTests
         // Arrange
         await _fixture.ResetAsync();
 
-        var db = _fixture.CreateMooDb();
+        var db = _fixture.CreateMooDbContext();
 
         // Act
         var result = await db.Sql.ScalarAsync<TestStatus>("SELECT CAST(N'Suspended' AS NVARCHAR(20));");

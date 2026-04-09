@@ -18,7 +18,7 @@ public sealed class StrictConstructorMappingTests
         // Arrange
         await _fixture.ResetAsync();
 
-        var db = _fixture.CreateStrictMooDb();
+        var db = _fixture.CreateStrictMooDbContext();
 
         // Act
         var result = await db.Sql.SingleAsync<ConstructorAndPropertyRow>(
@@ -37,7 +37,7 @@ public sealed class StrictConstructorMappingTests
         // Arrange
         await _fixture.ResetAsync();
 
-        var db = _fixture.CreateStrictMooDb();
+        var db = _fixture.CreateStrictMooDbContext();
 
         // Act
         var action = () => db.Sql.SingleAsync<MissingPropertyRow>(

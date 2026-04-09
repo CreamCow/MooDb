@@ -10,7 +10,7 @@ public sealed class BulkArgumentGuardTests
     public async Task MooDbBulkWriteToTableAsyncDataTable_WhenTableNameIsBlank_ThrowsArgumentException()
     {
         // Arrange
-        var db = new MooDb(ConnectionString);
+        var db = new MooDbContext(ConnectionString);
         var table = new DataTable();
 
         // Act
@@ -24,7 +24,7 @@ public sealed class BulkArgumentGuardTests
     public async Task MooDbBulkWriteToTableAsyncDataTable_WhenDataTableIsNull_ThrowsArgumentNullException()
     {
         // Arrange
-        var db = new MooDb(ConnectionString);
+        var db = new MooDbContext(ConnectionString);
 
         // Act
         var action = () => db.Bulk.WriteToTableAsync("dbo.tbl_User", (DataTable)null!);
@@ -37,7 +37,7 @@ public sealed class BulkArgumentGuardTests
     public async Task MooDbBulkWriteToTableAsyncTyped_WhenTableNameIsBlank_ThrowsArgumentException()
     {
         // Arrange
-        var db = new MooDb(ConnectionString);
+        var db = new MooDbContext(ConnectionString);
         var rows = new[] { new BulkUserRow() };
 
         // Act
@@ -51,7 +51,7 @@ public sealed class BulkArgumentGuardTests
     public async Task MooDbBulkWriteToTableAsyncTyped_WhenRowsIsNull_ThrowsArgumentNullException()
     {
         // Arrange
-        var db = new MooDb(ConnectionString);
+        var db = new MooDbContext(ConnectionString);
 
         // Act
         var action = () => db.Bulk.WriteToTableAsync<BulkUserRow>("dbo.tbl_User", null!);

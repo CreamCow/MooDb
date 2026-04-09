@@ -21,7 +21,7 @@ public sealed class BulkWriteToTableAsyncTests
         // Arrange
         await _fixture.ResetAsync();
 
-        var db = _fixture.CreateMooDb();
+        var db = _fixture.CreateMooDbContext();
         var createdUtc = new DateTime(2024, 01, 02, 03, 04, 05);
 
         var table = new DataTable();
@@ -51,7 +51,7 @@ public sealed class BulkWriteToTableAsyncTests
         // Arrange
         await _fixture.ResetAsync();
 
-        var db = _fixture.CreateMooDb();
+        var db = _fixture.CreateMooDbContext();
         var createdUtc = new DateTime(2024, 01, 02, 03, 04, 05);
 
         var rows = new[]
@@ -122,7 +122,7 @@ public sealed class BulkWriteToTableAsyncTests
                 new SqlParameter("@UpdatedUtc", DBNull.Value)
             ]);
 
-        var db = _fixture.CreateMooDb();
+        var db = _fixture.CreateMooDbContext();
         var createdUtc = new DateTime(2024, 01, 02, 03, 04, 05);
 
         var rows = new[]
@@ -168,7 +168,7 @@ public sealed class BulkWriteToTableAsyncTests
         // Arrange
         await _fixture.ResetAsync();
 
-        var db = _fixture.CreateMooDb();
+        var db = _fixture.CreateMooDbContext();
         var createdUtc = new DateTime(2024, 01, 02, 03, 04, 05);
 
         var rows = new[]

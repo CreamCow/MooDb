@@ -4,7 +4,7 @@ using Microsoft.Data.SqlClient;
 namespace MooDb.Execution;
 
 /// <summary>
-/// Executes SQL Server commands for MooDb.
+/// Executes SQL Server commands for MooDbContext.
 /// </summary>
 /// <remarks>
 /// <para>
@@ -12,7 +12,7 @@ namespace MooDb.Execution;
 /// timeout resolution, and output parameter propagation.
 /// </para>
 /// <para>
-/// This type is internal to MooDb and is shared by the stored procedure, SQL text,
+/// This type is internal to MooDbContext and is shared by the stored procedure, SQL text,
 /// and transaction execution surfaces.
 /// </para>
 /// </remarks>
@@ -162,7 +162,7 @@ internal sealed class MooCommandExecutor
     /// and runtime errors.
     /// </para>
     /// <para>
-    /// MooDb treats input parameters as caller-owned. To ensure parameters can be safely reused,
+    /// MooDbContext treats input parameters as caller-owned. To ensure parameters can be safely reused,
     /// each parameter is cloned before being attached to a command.
     /// </para>
     /// <para>

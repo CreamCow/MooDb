@@ -14,9 +14,9 @@ namespace MooDb.Mapping;
 /// - For record or constructor-based types, values are passed into the constructor via the <see cref="Create"/> delegate.
 /// - For types with writable properties, values may be assigned after creation via the optional <see cref="Assign"/> delegate.
 ///
-/// This allows MooDb to support both immutable records and mutable DTO-style classes.
+/// This allows MooDbContext to support both immutable records and mutable DTO-style classes.
 ///
-/// By compiling and caching these delegates, MooDb avoids repeated reflection during row mapping.
+/// By compiling and caching these delegates, MooDbContext avoids repeated reflection during row mapping.
 /// </remarks>
 internal sealed class MooMapPlan<T>
 {

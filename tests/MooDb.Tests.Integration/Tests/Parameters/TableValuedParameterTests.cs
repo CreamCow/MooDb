@@ -26,7 +26,7 @@ public sealed class TableValuedParameterTests
         var parameters = new MooParams()
             .AddTableValuedParameter("@Users", table, "Tests.udt_UserSeed");
 
-        var db = _fixture.CreateMooDb();
+        var db = _fixture.CreateMooDbContext();
 
         // Act
         var affectedRows = await db.ExecuteAsync("Tests.usp_User_InsertFromTable", parameters);
@@ -47,7 +47,7 @@ public sealed class TableValuedParameterTests
         var parameters = new MooParams()
             .AddTableValuedParameter("@Users", table, "Tests.udt_UserSeed");
 
-        var db = _fixture.CreateMooDb();
+        var db = _fixture.CreateMooDbContext();
 
         // Act
         var affectedRows = await db.ExecuteAsync("Tests.usp_User_InsertFromTable", parameters);

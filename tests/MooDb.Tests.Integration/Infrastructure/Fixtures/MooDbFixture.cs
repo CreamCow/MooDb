@@ -29,14 +29,14 @@ public sealed class MooDbFixture : IAsyncLifetime
         return Task.CompletedTask;
     }
 
-    public MooDb CreateMooDb()
+    public MooDbContext CreateMooDbContext()
     {
-        return new MooDb(ConnectionString);
+        return new MooDbContext(ConnectionString);
     }
 
-    public MooDb CreateStrictMooDb()
+    public MooDbContext CreateStrictMooDbContext()
     {
-        return new MooDb(ConnectionString, new MooDbOptions
+        return new MooDbContext(ConnectionString, new MooDbContextOptions
         {
             StrictAutoMapping = true
         });

@@ -18,7 +18,7 @@ public sealed class TransactionScalarAsyncTests
         // Arrange
         await _fixture.ResetAsync();
 
-        var db = _fixture.CreateMooDb();
+        var db = _fixture.CreateMooDbContext();
         await using var transaction = await db.BeginTransactionAsync();
 
         // Act
@@ -34,7 +34,7 @@ public sealed class TransactionScalarAsyncTests
         // Arrange
         await _fixture.ResetAsync();
 
-        var db = _fixture.CreateMooDb();
+        var db = _fixture.CreateMooDbContext();
         await using var transaction = await db.BeginTransactionAsync();
 
         // Act

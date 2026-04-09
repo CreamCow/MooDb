@@ -20,7 +20,7 @@ public sealed class ListAsyncTests
         // Arrange
         await _fixture.ResetAsync();
 
-        var db = _fixture.CreateMooDb();
+        var db = _fixture.CreateMooDbContext();
 
         // Act
         var users = await db.ListAsync<TestUser>("dbo.usp_User_List");
@@ -94,7 +94,7 @@ public sealed class ListAsyncTests
                 new SqlParameter("@UpdatedUtc2", DBNull.Value)
             });
 
-        var db = _fixture.CreateMooDb();
+        var db = _fixture.CreateMooDbContext();
 
         // Act
         var users = await db.ListAsync<TestUser>("dbo.usp_User_List");

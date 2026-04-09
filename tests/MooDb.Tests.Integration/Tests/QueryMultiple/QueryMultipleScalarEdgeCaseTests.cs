@@ -18,7 +18,7 @@ public sealed class QueryMultipleScalarEdgeCaseTests
         // Arrange
         await _fixture.ResetAsync();
 
-        var db = _fixture.CreateMooDb();
+        var db = _fixture.CreateMooDbContext();
 
         // Act
         var result = await db.Sql.QueryMultipleAsync(
@@ -40,7 +40,7 @@ public sealed class QueryMultipleScalarEdgeCaseTests
         // Arrange
         await _fixture.ResetAsync();
 
-        var db = _fixture.CreateMooDb();
+        var db = _fixture.CreateMooDbContext();
 
         // Act
         var ex = await Assert.ThrowsAsync<InvalidOperationException>(() =>

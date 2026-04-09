@@ -26,7 +26,7 @@ public sealed class SingleAsyncCustomMappingTests
             SET IDENTITY_INSERT [dbo].[tbl_User] OFF;
             """);
 
-        var db = _fixture.CreateMooDb();
+        var db = _fixture.CreateMooDbContext();
         var parameters = new MooParams().AddInt("@UserId", 1);
 
         // Act

@@ -20,7 +20,7 @@ public sealed class ScalarAsyncDateTime2Tests
 
         var expected = DateTime.MinValue;
         var parameters = new MooParams().AddDateTime2("@Value", expected, scale: 7);
-        var db = _fixture.CreateMooDb();
+        var db = _fixture.CreateMooDbContext();
 
         // Act
         var actual = await db.ScalarAsync<DateTime>("Tests.usp_DateTime2_RoundTrip", parameters);
@@ -37,7 +37,7 @@ public sealed class ScalarAsyncDateTime2Tests
 
         var expected = DateTime.MaxValue;
         var parameters = new MooParams().AddDateTime2("@Value", expected, scale: 7);
-        var db = _fixture.CreateMooDb();
+        var db = _fixture.CreateMooDbContext();
 
         // Act
         var actual = await db.ScalarAsync<DateTime>("Tests.usp_DateTime2_RoundTrip", parameters);
@@ -54,7 +54,7 @@ public sealed class ScalarAsyncDateTime2Tests
 
         var expected = new DateTime(2024, 01, 02, 03, 04, 05, 123).AddTicks(4567);
         var parameters = new MooParams().AddDateTime2("@Value", expected, scale: 7);
-        var db = _fixture.CreateMooDb();
+        var db = _fixture.CreateMooDbContext();
 
         // Act
         var actual = await db.ScalarAsync<DateTime>("Tests.usp_DateTime2_RoundTrip", parameters);

@@ -18,7 +18,7 @@ public sealed class TransactionExecuteAsyncTests
         // Arrange
         await _fixture.ResetAsync();
 
-        var db = _fixture.CreateMooDb();
+        var db = _fixture.CreateMooDbContext();
         await using var transaction = await db.BeginTransactionAsync();
 
         // Act
@@ -49,7 +49,7 @@ public sealed class TransactionExecuteAsyncTests
         // Arrange
         await _fixture.ResetAsync();
 
-        var db = _fixture.CreateMooDb();
+        var db = _fixture.CreateMooDbContext();
         var transaction = await db.BeginTransactionAsync();
         await transaction.DisposeAsync();
 
@@ -65,7 +65,7 @@ public sealed class TransactionExecuteAsyncTests
         // Arrange
         await _fixture.ResetAsync();
 
-        var db = _fixture.CreateMooDb();
+        var db = _fixture.CreateMooDbContext();
         await using var transaction = await db.BeginTransactionAsync();
         await transaction.CommitAsync();
 
@@ -82,7 +82,7 @@ public sealed class TransactionExecuteAsyncTests
         // Arrange
         await _fixture.ResetAsync();
 
-        var db = _fixture.CreateMooDb();
+        var db = _fixture.CreateMooDbContext();
 
         // Act
         await using (var transaction = await db.BeginTransactionAsync())

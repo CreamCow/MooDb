@@ -12,15 +12,15 @@ namespace MooDb;
 /// </summary>
 /// <remarks>
 /// <para>
-/// A <see cref="MooTransaction"/> provides the same core API surface as <see cref="MooDb"/>,
+/// A <see cref="MooTransaction"/> provides the same core API surface as <see cref="MooDbContext"/>,
 /// but all commands execute on the same connection and within the same SQL Server transaction.
 /// </para>
 /// <para>
-/// Use <see cref="global::MooDb.MooDb.BeginTransactionAsync"/> to create an instance.
+/// Use <see cref="global::MooDb.MooDbContext.BeginTransactionAsync"/> to create an instance.
 /// </para>
 /// <para>
 /// Changes are committed only when <see cref="CommitAsync(CancellationToken)"/> is called.
-/// If the transaction is disposed without being committed, MooDb attempts to roll it back automatically.
+/// If the transaction is disposed without being committed, MooDbContext attempts to roll it back automatically.
 /// </para>
 /// <para>
 /// After <see cref="CommitAsync(CancellationToken)"/>, the transaction should be considered complete and disposed.
@@ -199,7 +199,7 @@ public sealed class MooTransaction : IAsyncDisposable
     /// Throws an <see cref="InvalidOperationException"/> if more than one row is returned.
     /// </para>
     /// <para>
-    /// The supplied <paramref name="map"/> delegate is invoked for each row and bypasses MooDb automatic mapping.
+    /// The supplied <paramref name="map"/> delegate is invoked for each row and bypasses MooDbContext automatic mapping.
     /// </para>
     /// </remarks>
     public Task<T?> SingleAsync<T>(
@@ -277,7 +277,7 @@ public sealed class MooTransaction : IAsyncDisposable
     /// </summary>
     /// <remarks>
     /// <para>
-    /// The supplied <paramref name="map"/> delegate is invoked once per row and bypasses MooDb automatic mapping.
+    /// The supplied <paramref name="map"/> delegate is invoked once per row and bypasses MooDbContext automatic mapping.
     /// </para>
     /// <para>
     /// This is useful when the result shape does not map cleanly by convention, when you want reusable map classes, or when you want precise control over materialisation.
@@ -327,7 +327,7 @@ public sealed class MooTransaction : IAsyncDisposable
     /// Each call on <paramref name="read"/> consumes the next result set in order.
     /// </para>
     /// <para>
-    /// MooDb fully materialises the results inside the method call, so callers do not manage live reader objects.
+    /// MooDbContext fully materialises the results inside the method call, so callers do not manage live reader objects.
     /// </para>
     /// <para>
     /// Attempting to read beyond the available result sets throws an <see cref="InvalidOperationException"/>.
@@ -385,7 +385,7 @@ public sealed class MooTransaction : IAsyncDisposable
     /// </summary>
     /// <remarks>
     /// <para>
-    /// If the transaction has not been committed, MooDb attempts to roll it back before disposing resources.
+    /// If the transaction has not been committed, MooDbContext attempts to roll it back before disposing resources.
     /// </para>
     /// <para>
     /// The underlying SQL transaction is always disposed. The connection is disposed only when this <see cref="MooTransaction"/> owns it.
