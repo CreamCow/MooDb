@@ -1,18 +1,14 @@
-<p align="left">
-  <img src="https://raw.githubusercontent.com/CreamCow/MooDb/main/images/moodb-logo-and-wordmark-png.png"
-       alt="MooDb"
-       width="220" />
-</p>
-
-# MooDb™
+![MooDb](https://raw.githubusercontent.com/CreamCow/MooDb/main/images/moodb-logo-and-wordmark-png.png)
 
 # MooDb™
 
 MooDb is a small, explicit micro ORM for SQL Server.
 
-It is designed for developers who want a clean API over ADO.NET without taking on the weight of a large ORM. MooDb is **stored procedure first**, supports **raw SQL when needed**, and keeps common database work predictable.
+It is designed for developers who want full control over their database, with a clean and predictable API over ADO.NET, without the weight or hidden behaviour of a large ORM.
 
-MooDb is released under the MIT License and is free to use in both personal and commercial projects.
+MooDb is **stored procedure first**, supports **raw SQL when needed**, and keeps database access explicit and easy to reason about.
+
+MooDb is free to use, now and always, in both personal and commercial projects.
 
 ## Why MooDb
 
@@ -101,3 +97,5 @@ Recommended starting points:
 - Philosophy
 - Creating a MooDb Instance
 - Your First Stored Procedure Call
+
+Licensed under MIT. MooDb will always be free to use.
