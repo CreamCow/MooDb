@@ -11,11 +11,12 @@
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 
 		<PackageId>MooDb</PackageId>
-		<Version>0.9.2</Version>
+		<Version>1.0.0</Version>
 		<Authors>Phillip Smith</Authors>
 		<Company>CreamCow Ltd.</Company>
 		<Owners>CreamCow Ltd.</Owners>
-
+		<PackageIcon>moodb-logo-png.png</PackageIcon>
+		<Title>MooDb</Title>
 		<Description>MooDb is a micro ORM for .NET that gives you full control of your database while keeping your C# clean, explicit, and fast.</Description>
 		<PackageTags>orm;micro-orm;sql;dotnet;database;ado.net;moodb</PackageTags>
 
@@ -47,6 +48,7 @@
 
 	<ItemGroup>
 		<None Include="README.md" Pack="true" PackagePath="\" />
+		<None Include="..\..\images\moodb-logo-png.png" Pack="true" PackagePath="\" />
 	</ItemGroup>
 
 </Project>
