@@ -1,3 +1,11 @@
+<p align="left">
+  <img src="https://raw.githubusercontent.com/CreamCow/MooDb/main/images/moodb-logo-and-wordmark-png.png"
+       alt="MooDb"
+       width="220" />
+</p>
+
+# MooDb™
+
 # MooDb™
 
 MooDb is a small, explicit micro ORM for SQL Server.
